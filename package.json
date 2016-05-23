@@ -1,0 +1,25 @@
+{
+  "name": "showcase-marketing",
+  "version": "0.0.0",
+  "description": "Marketing widgets for showcase",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cinema6/showcase-marketing.git"
+  },
+  "author": "Reelcontent, Inc.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cinema6/showcase-marketing/issues"
+  },
+  "homepage": "https://github.com/cinema6/showcase-marketing#readme",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-dev-server": "^0.1.0"
+  }
+}

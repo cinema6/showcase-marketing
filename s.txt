@@ -1,0 +1,6 @@
+-grunt:
+	-dev server
+-grunt-contrib-connect
+-grunt-contrib-watch
+-browserify
+-babel
