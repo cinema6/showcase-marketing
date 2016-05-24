@@ -1,13 +1,38 @@
 module.exports = function(grunt) {
+  
+
+  grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  
-  import connect from 'tasks/Connect'; 
+   
   grunt.initConfig({
-    connect: connect,
+    connect: { 
+      server:{
+        options: {
+          port: 9000,
+          base: 'src',
+          livereload: true,
+          open: {
+            target: "http://localhost:9000"
+          }
+        }
+      }
+  },
     watch: {
       scripts: {
-        files: ['**/*.js']
+        files: ['js/**/*.js'],
+        tasks: ['server']
+      }
+    },
+    babel:{
+      options: {
+            sourceMap: true,
+            presets: ['babel-preset-es2015']
+      },
+      dist: {
+        files: {
+          'index.js': 'src/index.js'
+        }
       }
     }
   });
@@ -15,6 +40,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('server',  [
     'connect' ,
+    'babel',
     'watch'
   ]
   );
