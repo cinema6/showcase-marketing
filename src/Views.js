@@ -1,7 +1,7 @@
 'use strict';
 
 import React, { Component, PropTypes } from 'react';
-import Marketing from "./components/Marketing";
+import AppInput from "./components/AppInput";
 
 export default class Views extends Component{
 	constructor(){
@@ -10,7 +10,8 @@ export default class Views extends Component{
 	render(){
 		return(
 			<div>
-				<Marketing></Marketing>
+				<AppInput/>
+			
 			</div>
 		);
 	}

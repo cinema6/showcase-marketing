@@ -43196,9 +43196,9 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _Marketing = require('./components/Marketing');
+var _AppInput = require('./components/AppInput');
 
-var _Marketing2 = _interopRequireDefault(_Marketing);
+var _AppInput2 = _interopRequireDefault(_AppInput);
 
 function _interopRequireDefault(obj) {
 	return obj && obj.__esModule ? obj : { default: obj };
@@ -43234,7 +43234,7 @@ var Views = function (_Component) {
 	_createClass(Views, [{
 		key: 'render',
 		value: function render() {
-			return _react2.default.createElement('div', null, _react2.default.createElement(_Marketing2.default, null));
+			return _react2.default.createElement('div', null, _react2.default.createElement(_AppInput2.default, null));
 		}
 	}]);
 
@@ -43243,7 +43243,7 @@ var Views = function (_Component) {
 
 exports.default = Views;
 
-},{"./components/Marketing":275,"react":264}],275:[function(require,module,exports){
+},{"./components/AppInput":275,"react":264}],275:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
@@ -43308,7 +43308,6 @@ function _inherits(subClass, superClass) {
 	}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 }
 
-// Product Preview Props
 var PREVIEW = {
 	CARD_OPTIONS: {
 		cardType: 'showcase-app'
@@ -43319,13 +43318,13 @@ var PREVIEW = {
 	}
 };
 
-var Marketing = function (_Component) {
-	_inherits(Marketing, _Component);
+var AppInput = function (_Component) {
+	_inherits(AppInput, _Component);
 
-	function Marketing() {
-		_classCallCheck(this, Marketing);
+	function AppInput() {
+		_classCallCheck(this, AppInput);
 
-		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Marketing).apply(this, arguments));
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AppInput).apply(this, arguments));
 
 		_this.state = {
 			value: []
@@ -43333,7 +43332,7 @@ var Marketing = function (_Component) {
 		return _this;
 	}
 
-	_createClass(Marketing, [{
+	_createClass(AppInput, [{
 		key: 'render',
 		value: function render() {
 			return _react2.default.createElement('div', null, _react2.default.createElement('form', { onSubmit: handleSubmit(this.onSubmit) }, _react2.default.createElement(_TokenTextField2.default, {
@@ -43342,45 +43341,50 @@ var Marketing = function (_Component) {
 				TokenComponent: _AppSearchToken2.default,
 				SuggestionComponent: _AppSearchItem2.default,
 				getSuggestions: getSuggestions,
-				value: this.state.value
-			}), _react2.default.createElement(_AdPreview2.default, {
-				cardOptions: PREVIEW.CARD_OPTIONS,
-				placementOptions: PREVIEW.PLACEMENT_OPTIONS,
-				productData: { name: "", description: "" },
-				factory: _app.createInterstitialFactory
-			})));
+				value: this.state.value })));
 		}
 	}]);
 
-	return Marketing;
+	return AppInput;
 }(_react.Component);
 
-exports.default = Marketing;
+exports.default = AppInput;
 
 function handleChange(val) {
 	this.setState({ value: val });
 }
+
 function handleSubmit(e) {
-	//Update model
-	/*  <AdPreview
-    	cardOptions={PREVIEW.CARD_OPTIONS}
-    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
-    productData = {{name:"", description:""}}
-    factory={createInterstitialFactory}
-     ></AdPreview>
+
+	/*
+ 	AdPreview.propTypes = {
+     cardOptions: PropTypes.object.isRequired,
+     placementOptions: PropTypes.shape({
+         type: PropTypes.string.isRequired
+     }).isRequired,
+     productData: PropTypes.object,
+     factory: PropTypes.func.isRequired
+ };
  */
-	return;
+	/*	function loadPreview( data , parentNode){
+ 		<AdPreview
+ 			     	cardOptions={PREVIEW.CARD_OPTIONS}
+ 				    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
+ 				    productData = {data}
+ 				    factory={createInterstitialFactory}
+ 
+ 			    ></AdPreview>);
+ 	}*/
+
 }
 function getSuggestions(val) {
-	console.log(val, "called");
-
 	// empty/null -> return promise.resolve []
 	return val ? getURIS(val) : Promise.resolve([]);
 }
 function getURIS(val) {
 	return queryAppStore(val).then(function (arr) {
 		var objs = arr;
-
+		//add id prop for TokenTextField
 		var _iteratorNormalCompletion = true;
 		var _didIteratorError = false;
 		var _iteratorError = undefined;
@@ -43389,7 +43393,6 @@ function getURIS(val) {
 			for (var _iterator = objs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				var obj = _step.value;
 
-				//add id prop for TokenTextField
 				obj.id = obj.uri;
 			}
 		} catch (err) {
@@ -43412,8 +43415,6 @@ function getURIS(val) {
 		console.log(e);
 	});
 }
-
-// returns promise
 function queryAppStore(input) {
 	return fetch('https://platform-staging.reelcontent.com/api/public/search/apps?query=' + input).then(function (response) {
 		if (response.status >= 400) {

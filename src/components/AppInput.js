@@ -9,7 +9,6 @@ import AppSearchToken from 'showcase/src/components/AppSearchToken';
 import { assign } from 'lodash';
 import { createInterstitialFactory } from 'showcase-core/dist/factories/app';
 
-// Product Preview Props
 const PREVIEW = {
     CARD_OPTIONS: {
         cardType: 'showcase-app'
@@ -19,8 +18,7 @@ const PREVIEW = {
         branding: 'showcase-app--interstitial'
     }
 };
-
-export default class Marketing extends Component{
+export default class AppInput extends Component{
 	constructor(){
 		super(...arguments);
 		this.state = {
@@ -37,11 +35,8 @@ export default class Marketing extends Component{
 		                TokenComponent = { AppSearchToken }
 		                SuggestionComponent = { AppSearchItem }
 		                getSuggestions = { getSuggestions }
-		                value = { this.state.value }
-			        />
-
+		                value = { this.state.value } />
 			    </form>
-
 			</div>
 		);
 	}
@@ -49,21 +44,31 @@ export default class Marketing extends Component{
 function handleChange(val){
 		this.setState({value : val});
 }
+
 function handleSubmit(e){
-	//Update model
-			  /*  <AdPreview
+
+/*
+	AdPreview.propTypes = {
+    cardOptions: PropTypes.object.isRequired,
+    placementOptions: PropTypes.shape({
+        type: PropTypes.string.isRequired
+    }).isRequired,
+    productData: PropTypes.object,
+    factory: PropTypes.func.isRequired
+};
+*/
+/*	function loadPreview( data , parentNode){
+		<AdPreview
 			     	cardOptions={PREVIEW.CARD_OPTIONS}
 				    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
-				    productData = {{name:"", description:""}}
+				    productData = {data}
 				    factory={createInterstitialFactory}
 
-			    ></AdPreview>
-			*/
-	return;
+			    ></AdPreview>);
+	}*/
+
 }
 function getSuggestions(val){
-	console.log(val, "called");
-
 	// empty/null -> return promise.resolve []
 	return (val) ?    
 		getURIS(val):
@@ -73,20 +78,14 @@ function getURIS(val){
 	return(
 		queryAppStore(val).then(function(arr){
 			let objs = arr;
-			
+			//add id prop for TokenTextField
 			for(let obj of objs){
-				//add id prop for TokenTextField
 				obj.id = obj.uri;
 			}
 			return objs;
 		}).catch(function(e){console.log(e);})
 	);
 }
-
-
-
-
-// returns promise
 function queryAppStore(input){
 	return (fetch(`https://platform-staging.reelcontent.com/api/public/search/apps?query=${input}`)
 		    .then(function(response) {
@@ -96,5 +95,4 @@ function queryAppStore(input){
 		        return response.json();
 		    })
 	);
-
 }
