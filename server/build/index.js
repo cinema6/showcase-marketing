@@ -43249,17 +43249,17 @@ exports.default = Views;
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 Object.defineProperty(exports, "__esModule", {
-				value: true
+	value: true
 });
 
 var _createClass = function () {
-				function defineProperties(target, props) {
-								for (var i = 0; i < props.length; i++) {
-												var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-								}
-				}return function (Constructor, protoProps, staticProps) {
-								if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-				};
+	function defineProperties(target, props) {
+		for (var i = 0; i < props.length; i++) {
+			var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+		}
+	}return function (Constructor, protoProps, staticProps) {
+		if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+	};
 }();
 
 var _react = require('react');
@@ -43287,101 +43287,140 @@ var _lodash = require('lodash');
 var _app = require('showcase-core/dist/factories/app');
 
 function _interopRequireDefault(obj) {
-				return obj && obj.__esModule ? obj : { default: obj };
+	return obj && obj.__esModule ? obj : { default: obj };
 }
 
 function _classCallCheck(instance, Constructor) {
-				if (!(instance instanceof Constructor)) {
-								throw new TypeError("Cannot call a class as a function");
-				}
+	if (!(instance instanceof Constructor)) {
+		throw new TypeError("Cannot call a class as a function");
+	}
 }
 
 function _possibleConstructorReturn(self, call) {
-				if (!self) {
-								throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-				}return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+	if (!self) {
+		throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	}return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
 }
 
 function _inherits(subClass, superClass) {
-				if (typeof superClass !== "function" && superClass !== null) {
-								throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
-				}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	if (typeof superClass !== "function" && superClass !== null) {
+		throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
+	}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 }
 
 // Product Preview Props
 var PREVIEW = {
-				CARD_OPTIONS: {
-								cardType: 'showcase-app'
-				},
-				PLACEMENT_OPTIONS: {
-								type: 'mobile-card',
-								branding: 'showcase-app--interstitial'
-				}
+	CARD_OPTIONS: {
+		cardType: 'showcase-app'
+	},
+	PLACEMENT_OPTIONS: {
+		type: 'mobile-card',
+		branding: 'showcase-app--interstitial'
+	}
 };
 
-function findProducts(find, query) {
-				if (!query) {
-								return Promise.resolve([]);
-				}
-
-				return find({ query: query, limit: 10 }).then(function (products) {
-								return products.map(function (product) {
-												return (0, _lodash.assign)({}, product, {
-																id: product.uri // Key products by their URI as it will be unique
-												});
-								});
-				}).catch(function () {
-								return [];
-				});
-}
-
 var Marketing = function (_Component) {
-				_inherits(Marketing, _Component);
+	_inherits(Marketing, _Component);
 
-				function Marketing() {
-								_classCallCheck(this, Marketing);
+	function Marketing() {
+		_classCallCheck(this, Marketing);
 
-								return _possibleConstructorReturn(this, Object.getPrototypeOf(Marketing).apply(this, arguments));
-				}
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Marketing).apply(this, arguments));
 
-				_createClass(Marketing, [{
-								key: 'render',
-								value: function render() {
-												var _this2 = this;
+		_this.state = {
+			value: []
+		};
+		return _this;
+	}
 
-												return _react2.default.createElement('div', null, '//form start', _react2.default.createElement('form', { onSubmit: handleSubmit(this.onSubmit) }, _react2.default.createElement(_TokenTextField2.default, {
-																onChange: function onChange() {},
-																maxValues: 1,
-																TokenComponent: _AppSearchToken2.default,
-																SuggestionComponent: _AppSearchItem2.default,
-																getSuggestions: function getSuggestions(text) {
-																				return findProducts(_this2.props.findProducts, text);
-																},
-																value: ['']
-												})), _react2.default.createElement(_AdPreview2.default, {
-																cardOptions: PREVIEW.CARD_OPTIONS,
-																placementOptions: PREVIEW.PLACEMENT_OPTIONS,
-																productData: { name: "Filler name", description: "Filler Description" },
-																factory: _app.createInterstitialFactory
+	_createClass(Marketing, [{
+		key: 'render',
+		value: function render() {
+			return _react2.default.createElement('div', null, _react2.default.createElement('form', { onSubmit: handleSubmit(this.onSubmit) }, _react2.default.createElement(_TokenTextField2.default, {
+				onChange: handleChange.bind(this),
+				maxValues: 1,
+				TokenComponent: _AppSearchToken2.default,
+				SuggestionComponent: _AppSearchItem2.default,
+				getSuggestions: getSuggestions,
+				value: this.state.value
+			}), _react2.default.createElement(_AdPreview2.default, {
+				cardOptions: PREVIEW.CARD_OPTIONS,
+				placementOptions: PREVIEW.PLACEMENT_OPTIONS,
+				productData: { name: "", description: "" },
+				factory: _app.createInterstitialFactory
+			})));
+		}
+	}]);
 
-												}));
-								}
-				}]);
-
-				return Marketing;
+	return Marketing;
 }(_react.Component);
 
 exports.default = Marketing;
 
+function handleChange(val) {
+	this.setState({ value: val });
+}
+function handleSubmit(e) {
+	//Update model
+	/*  <AdPreview
+    	cardOptions={PREVIEW.CARD_OPTIONS}
+    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
+    productData = {{name:"", description:""}}
+    factory={createInterstitialFactory}
+     ></AdPreview>
+ */
+	return;
+}
+function getSuggestions(val) {
+	console.log(val, "called");
+
+	// empty/null -> return promise.resolve []
+	return val ? getURIS(val) : Promise.resolve([]);
+}
+function getURIS(val) {
+	return queryAppStore(val).then(function (arr) {
+		var objs = arr;
+
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = objs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var obj = _step.value;
+
+				//add id prop for TokenTextField
+				obj.id = obj.uri;
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		return objs;
+	}).catch(function (e) {
+		console.log(e);
+	});
+}
+
+// returns promise
 function queryAppStore(input) {
-				fetch('https://platform-staging.reelcontent.com/api/public/search/apps?query==${input}').then(function (response) {
-								if (response.status >= 400) {
-												throw new Error("Bad response from server");
-								}
-								return response.json();
-				}).then(function (appJSON) {
-								console.log(appJSON);
-				});
+	return fetch('https://platform-staging.reelcontent.com/api/public/search/apps?query=' + input).then(function (response) {
+		if (response.status >= 400) {
+			throw new Error("Bad response from server");
+		}
+		return response.json();
+	});
 }
 
 },{"lodash":116,"react":264,"showcase-core/dist/factories/app":265,"showcase/src/components/AdPreview":266,"showcase/src/components/AppSearchItem":267,"showcase/src/components/AppSearchToken":268,"showcase/src/components/TokenTextField":269}],276:[function(require,module,exports){

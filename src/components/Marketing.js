@@ -20,64 +20,81 @@ const PREVIEW = {
     }
 };
 
-function findProducts(find, query) {
-    if (!query) { return Promise.resolve([]); }
-
-    return find({ query, limit: 10 })
-        .then(products => products.map(product => assign({}, product, {
-            id: product.uri // Key products by their URI as it will be unique
-        })))
-        .catch(() => []);
-}
-
 export default class Marketing extends Component{
 	constructor(){
 		super(...arguments);
+		this.state = {
+			value : []
+		};
 	}
-	
 	render(){	
 		return(
-		<div>
-			//form start
-			<form onSubmit={handleSubmit(this.onSubmit)}>	
-				<TokenTextField 
-					onChange = {handleChange} //TODO
-	                maxValues={1}
-	                TokenComponent={AppSearchToken}
-	                SuggestionComponent={AppSearchItem}
-	                getSuggestions={text => findProducts(this.props.findProducts, text)}
-	                value={ ['']}
-		        />
-		    </form>
-		    <AdPreview
-		     	cardOptions={PREVIEW.CARD_OPTIONS}
-			    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
-			    productData = {{name:"Filler name", description:"Filler Description"}}
-			    factory={createInterstitialFactory}
+			<div>
+				<form onSubmit={handleSubmit(this.onSubmit)}>	
+					<TokenTextField
+						onChange = { handleChange.bind(this) }
+		                maxValues = { 1 }
+		                TokenComponent = { AppSearchToken }
+		                SuggestionComponent = { AppSearchItem }
+		                getSuggestions = { getSuggestions }
+		                value = { this.state.value }
+			        />
 
-		    ></AdPreview>
-		</div>
+			    </form>
 
-			);
+			</div>
+		);
 	}
-
 }
-//TODO: pass list to TokenTextField
-function handleChange(e){
+function handleChange(val){
+		this.setState({value : val});
+}
+function handleSubmit(e){
+	//Update model
+			  /*  <AdPreview
+			     	cardOptions={PREVIEW.CARD_OPTIONS}
+				    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
+				    productData = {{name:"", description:""}}
+				    factory={createInterstitialFactory}
 
-	function queryAppStore(input){
-		fetch('https://platform-staging.reelcontent.com/api/public/search/apps?query==${input}')
+			    ></AdPreview>
+			*/
+	return;
+}
+function getSuggestions(val){
+	console.log(val, "called");
+
+	// empty/null -> return promise.resolve []
+	return (val) ?    
+		getURIS(val):
+		Promise.resolve([]);
+}
+function getURIS(val){	
+	return(
+		queryAppStore(val).then(function(arr){
+			let objs = arr;
+			
+			for(let obj of objs){
+				//add id prop for TokenTextField
+				obj.id = obj.uri;
+			}
+			return objs;
+		}).catch(function(e){console.log(e);})
+	);
+}
+
+
+
+
+// returns promise
+function queryAppStore(input){
+	return (fetch(`https://platform-staging.reelcontent.com/api/public/search/apps?query=${input}`)
 		    .then(function(response) {
 		        if (response.status >= 400) {
 		            throw new Error("Bad response from server");
 		        }
 		        return response.json();
 		    })
-		    .then(function(appJSON) {
-		       
-		      //display data in suggestions
-
-		    });
-	}
+	);
 
 }
