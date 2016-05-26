@@ -41238,6 +41238,12 @@ var _c6embed = require('c6embed');
 
 var _lodash = require('lodash');
 
+var _classnames = require('classnames');
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _url = require('url');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var PLAYER_STYLES = {
@@ -41249,6 +41255,16 @@ var PLAYER_STYLES = {
     zIndex: 'auto'
 };
 
+function delay(time) {
+    if (!time) {
+        return Promise.resolve();
+    }
+
+    return new Promise(function (resolve) {
+        return setTimeout(resolve, time);
+    });
+}
+
 var AdPreview = function (_Component) {
     (0, _inherits3.default)(AdPreview, _Component);
 
@@ -41257,14 +41273,21 @@ var AdPreview = function (_Component) {
 
         var _this = (0, _possibleConstructorReturn3.default)(this, _Component.apply(this, arguments));
 
+        _this.state = {
+            loading: false
+        };
+
         _this.createPlayerDebounced = (0, _lodash.debounce)(_this.createPlayer.bind(_this), 250);
         return _this;
     }
 
     AdPreview.prototype.createPlayer = function createPlayer() {
+        var _this2 = this;
+
         var props = arguments.length <= 0 || arguments[0] === undefined ? this.props : arguments[0];
         var root = this.refs.root;
         var player = this.player;
+        var apiRoot = props.apiRoot;
         var cardOptions = props.cardOptions;
         var placementOptions = props.placementOptions;
         var productData = props.productData;
@@ -41280,11 +41303,12 @@ var AdPreview = function (_Component) {
             return this.player = null;
         }
 
-        this.player = new _c6embed.Player('/api/public/players/' + type, (0, _lodash.defaults)({
+        this.player = new _c6embed.Player((0, _url.resolve)(apiRoot, '/api/public/players/' + type), (0, _lodash.defaults)({
             mobileType: type,
             preview: true,
             container: 'showcase',
-            context: 'showcase'
+            context: 'showcase',
+            autoLaunch: false
         }, placementOptions), {
             experience: {
                 id: 'e-showcase_preview',
@@ -41298,9 +41322,16 @@ var AdPreview = function (_Component) {
             }
         });
 
-        this.player.bootstrap(root, PLAYER_STYLES).then(function (player) {
+        Promise.all([this.player.bootstrap(root, PLAYER_STYLES), delay(this.props.loadDelay)]).then(function (_ref) {
+            var player = _ref[0];
             return player.show();
+        }).then(function () {
+            return _this2.setState({ loading: false });
+        }).then(function () {
+            return _this2.props.onLoadComplete();
         });
+
+        this.setState({ loading: true });
     };
 
     AdPreview.prototype.componentDidMount = function componentDidMount() {
@@ -41316,20 +41347,73 @@ var AdPreview = function (_Component) {
     };
 
     AdPreview.prototype.render = function render() {
+        var showLoadingAnimation = this.props.showLoadingAnimation;
+        var loading = this.state.loading;
+
+
         return _react2.default.createElement(
             'div',
             {
-                className: 'create-ad step-2 col-md-6 col-sm-12 col-xs-12 col-middle text-center' },
+                className: 'create-ad step-2 col-md-6 col-sm-6 col-xs-12 col-middle text-center'
+            },
             _react2.default.createElement(
                 'div',
                 { className: 'phone-wrap' },
-                _react2.default.createElement('div', { ref: 'root', className: 'phone-frame' })
+                _react2.default.createElement(
+                    'div',
+                    { ref: 'root', className: 'phone-frame' },
+                    showLoadingAnimation && _react2.default.createElement(
+                        'div',
+                        { 'data-test': 'animation',
+                            className: (0, _classnames2.default)('text-animation-wrap', {
+                                hidden: !loading
+                            }) },
+                        _react2.default.createElement(
+                            'h3',
+                            { className: 'light-text' },
+                            'Generating Preview'
+                        ),
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'animation-container' },
+                            _react2.default.createElement(
+                                'div',
+                                { className: 'animate-content' },
+                                _react2.default.createElement(
+                                    'p',
+                                    { className: 'frame-1' },
+                                    'Connecting to app store...'
+                                ),
+                                _react2.default.createElement(
+                                    'p',
+                                    { className: 'frame-2' },
+                                    'Collecting information...'
+                                ),
+                                _react2.default.createElement(
+                                    'p',
+                                    { className: 'frame-3' },
+                                    'Importing Screenshots...'
+                                ),
+                                _react2.default.createElement(
+                                    'p',
+                                    { className: 'frame-4' },
+                                    _react2.default.createElement(
+                                        'span',
+                                        null,
+                                        'All set!'
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                _react2.default.createElement(
+                    'p',
+                    null,
+                    'This is how your ad will appear'
+                )
             )
         );
-    };
-
-    AdPreview.prototype.shouldComponentUpdate = function shouldComponentUpdate() {
-        return false;
     };
 
     AdPreview.prototype.componentWillUnmount = function componentWillUnmount() {
@@ -41348,10 +41432,21 @@ AdPreview.propTypes = {
         type: _react.PropTypes.string.isRequired
     }).isRequired,
     productData: _react.PropTypes.object,
-    factory: _react.PropTypes.func.isRequired
+    factory: _react.PropTypes.func.isRequired,
+
+    apiRoot: _react.PropTypes.string.isRequired,
+    loadDelay: _react.PropTypes.number.isRequired,
+    showLoadingAnimation: _react.PropTypes.bool.isRequired,
+    onLoadComplete: _react.PropTypes.func.isRequired
+};
+AdPreview.defaultProps = {
+    apiRoot: '/',
+    showLoadingAnimation: false,
+    onLoadComplete: _lodash.noop,
+    loadDelay: 0
 };
 
-},{"babel-runtime/helpers/classCallCheck":5,"babel-runtime/helpers/inherits":6,"babel-runtime/helpers/possibleConstructorReturn":7,"c6embed":14,"lodash":116,"react":264}],267:[function(require,module,exports){
+},{"babel-runtime/helpers/classCallCheck":5,"babel-runtime/helpers/inherits":6,"babel-runtime/helpers/possibleConstructorReturn":7,"c6embed":14,"classnames":15,"lodash":116,"react":264,"url":270}],267:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -43192,6 +43287,8 @@ var _createClass = function () {
 	};
 }();
 
+var _appStyles;
+
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
@@ -43199,6 +43296,10 @@ var _react2 = _interopRequireDefault(_react);
 var _AppInput = require('./components/AppInput');
 
 var _AppInput2 = _interopRequireDefault(_AppInput);
+
+var _AppAd = require('./components/AppAd');
+
+var _AppAd2 = _interopRequireDefault(_AppAd);
 
 function _interopRequireDefault(obj) {
 	return obj && obj.__esModule ? obj : { default: obj };
@@ -43222,19 +43323,55 @@ function _inherits(subClass, superClass) {
 	}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 }
 
+function _defineProperty(obj, key, value) {
+	if (key in obj) {
+		Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
+	} else {
+		obj[key] = value;
+	}return obj;
+}
+
+var appStyles = (_appStyles = {
+	margin: "0"
+}, _defineProperty(_appStyles, 'margin', 'auto'), _defineProperty(_appStyles, 'display', 'block'), _defineProperty(_appStyles, 'fontFamily', "helvetica"), _defineProperty(_appStyles, 'textAlign', "center"), _defineProperty(_appStyles, 'listStyleType', "none"), _defineProperty(_appStyles, 'width', '400px'), _appStyles);
+
+// controls display of child components { AppInput , AppAd }
+
 var Views = function (_Component) {
 	_inherits(Views, _Component);
 
 	function Views() {
 		_classCallCheck(this, Views);
 
-		return _possibleConstructorReturn(this, Object.getPrototypeOf(Views).apply(this, arguments));
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Views).apply(this, arguments));
+
+		_this.state = {
+			value: {}
+		};
+		//step: 0,
+		_this.setValue = _this.setValue.bind(_this);
+		return _this;
 	}
+	// updates View value state (app object)
 
 	_createClass(Views, [{
+		key: 'setValue',
+		value: function setValue(obj) {
+			this.setState({ value: obj });
+			console.log(this.state.value);
+			//this.setStep(1);
+		}
+		// updates state.step { 0, 1 }
+
+	}, {
+		key: 'setStep',
+		value: function setStep(num) {
+			num === 0 || num === 1 ? this.setState({ step: num }) : console.error("Invalid step number");
+		}
+	}, {
 		key: 'render',
 		value: function render() {
-			return _react2.default.createElement('div', null, _react2.default.createElement(_AppInput2.default, null));
+			return _react2.default.createElement('div', { style: appStyles }, Object.keys(this.state.value).length != 0 ? _react2.default.createElement(_AppAd2.default, { appObj: this.state.value }) : _react2.default.createElement(_AppInput2.default, { update: this.setValue.bind(this) }));
 		}
 	}]);
 
@@ -43243,7 +43380,7 @@ var Views = function (_Component) {
 
 exports.default = Views;
 
-},{"./components/AppInput":275,"react":264}],275:[function(require,module,exports){
+},{"./components/AppAd":275,"./components/AppInput":276,"react":264}],275:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
@@ -43266,25 +43403,11 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _TokenTextField = require('showcase/src/components/TokenTextField');
-
-var _TokenTextField2 = _interopRequireDefault(_TokenTextField);
+var _app = require('showcase-core/dist/factories/app');
 
 var _AdPreview = require('showcase/src/components/AdPreview');
 
 var _AdPreview2 = _interopRequireDefault(_AdPreview);
-
-var _AppSearchItem = require('showcase/src/components/AppSearchItem');
-
-var _AppSearchItem2 = _interopRequireDefault(_AppSearchItem);
-
-var _AppSearchToken = require('showcase/src/components/AppSearchToken');
-
-var _AppSearchToken2 = _interopRequireDefault(_AppSearchToken);
-
-var _lodash = require('lodash');
-
-var _app = require('showcase-core/dist/factories/app');
 
 function _interopRequireDefault(obj) {
 	return obj && obj.__esModule ? obj : { default: obj };
@@ -43318,6 +43441,115 @@ var PREVIEW = {
 	}
 };
 
+var AppAd = function (_Component) {
+	_inherits(AppAd, _Component);
+
+	function AppAd() {
+		_classCallCheck(this, AppAd);
+
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AppAd).apply(this, arguments));
+
+		_this.state = {
+			data: _this.props.appObj
+		};
+
+		return _this;
+	}
+
+	_createClass(AppAd, [{
+		key: 'render',
+		value: function render() {
+			return _react2.default.createElement(_AdPreview2.default, {
+				cardOptions: PREVIEW.CARD_OPTIONS,
+				placementOptions: PREVIEW.PLACEMENT_OPTIONS,
+				productData: this.state.data,
+				factory: _app.createInterstitialFactory,
+				apiRoot: "https://platform-staging.reelcontent.com/"
+
+			});
+		}
+	}]);
+
+	return AppAd;
+}(_react.Component);
+
+exports.default = AppAd;
+
+AppAd.propTypes = {
+	appObj: _react.PropTypes.object.isRequired
+};
+
+},{"react":264,"showcase-core/dist/factories/app":265,"showcase/src/components/AdPreview":266}],276:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () {
+	function defineProperties(target, props) {
+		for (var i = 0; i < props.length; i++) {
+			var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+		}
+	}return function (Constructor, protoProps, staticProps) {
+		if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+	};
+}();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _TokenTextField = require('showcase/src/components/TokenTextField');
+
+var _TokenTextField2 = _interopRequireDefault(_TokenTextField);
+
+var _AppSearchItem = require('showcase/src/components/AppSearchItem');
+
+var _AppSearchItem2 = _interopRequireDefault(_AppSearchItem);
+
+var _AppSearchToken = require('showcase/src/components/AppSearchToken');
+
+var _AppSearchToken2 = _interopRequireDefault(_AppSearchToken);
+
+function _interopRequireDefault(obj) {
+	return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _classCallCheck(instance, Constructor) {
+	if (!(instance instanceof Constructor)) {
+		throw new TypeError("Cannot call a class as a function");
+	}
+}
+
+function _possibleConstructorReturn(self, call) {
+	if (!self) {
+		throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	}return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+	if (typeof superClass !== "function" && superClass !== null) {
+		throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
+	}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var inputStyles = {
+	margin: 'auto',
+	display: 'block',
+	padding: '10px',
+	listStyleType: 'none!important'
+};
+var buttonStyles = {
+	margin: 'auto',
+	display: 'inline-block',
+	padding: '10px',
+	width: '100%',
+	textAlign: 'center'
+};
+
 var AppInput = function (_Component) {
 	_inherits(AppInput, _Component);
 
@@ -43329,18 +43561,104 @@ var AppInput = function (_Component) {
 		_this.state = {
 			value: []
 		};
+
+		//this.handleChange = this.handleChange.bind(this);
+		//this.getSuggestions = this.getSuggestions.bind(this);
+		_this.handleSubmit = _this.handleSubmit.bind(_this);
+		_this.getIDs = _this.getIDs.bind(_this);
+		_this.queryAppStore = _this.queryAppStore.bind(_this);
+
 		return _this;
 	}
 
 	_createClass(AppInput, [{
+		key: 'handleChange',
+		value: function handleChange(val) {
+			this.setState({ value: val });
+		}
+	}, {
+		key: 'handleSubmit',
+		value: function handleSubmit(e) {
+			var _this2 = this;
+
+			e.preventDefault();
+			console.log(this.state.value[0].uri);
+
+			fetch('http://apps-staging.reelcontent.com/api/public/collateral/product-data?uri=' + this.state.value[0].uri).then(function (response) {
+				console.log(response);
+				if (response.status >= 400) {
+					throw new Error("Bad response from server");
+				} else if (response.status === 200) {
+					console.log(response.body);
+
+					response.json().then(function (e) {
+						_this2.props.update(e);
+					});
+				}
+			});
+		}
+	}, {
+		key: 'getSuggestions',
+		value: function getSuggestions(text) {
+			// empty/null -> return promise.resolve []
+			return text ? this.getIDs(text) : Promise.resolve([]);
+		}
+	}, {
+		key: 'getIDs',
+		value: function getIDs(text) {
+			return this.queryAppStore(text).then(function (arr) {
+				var objs = arr;
+				//add id prop for TokenTextField
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+
+				try {
+					for (var _iterator = objs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var obj = _step.value;
+
+						obj.id = obj.uri;
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+
+				return objs;
+			}).catch(function (e) {
+				return console.log(e);
+			});
+		}
+	}, {
+		key: 'queryAppStore',
+		value: function queryAppStore(input) {
+			return fetch('https://platform-staging.reelcontent.com/api/public/search/apps?query=' + input).then(function (response) {
+				if (response.status >= 400) {
+					throw new Error("Bad response from server");
+				}
+				return response.json();
+			});
+		}
+	}, {
 		key: 'render',
 		value: function render() {
-			return _react2.default.createElement('div', null, _react2.default.createElement('form', { onSubmit: handleSubmit(this.onSubmit) }, _react2.default.createElement(_TokenTextField2.default, {
-				onChange: handleChange.bind(this),
+			return _react2.default.createElement('div', null, _react2.default.createElement('form', { onSubmit: this.handleSubmit.bind(this) }, _react2.default.createElement('button', { type: 'submit', style: (inputStyles, buttonStyles) }, 'Generate Preview'), _react2.default.createElement(_TokenTextField2.default, {
+				style: inputStyles,
+				onChange: this.handleChange.bind(this),
 				maxValues: 1,
 				TokenComponent: _AppSearchToken2.default,
 				SuggestionComponent: _AppSearchItem2.default,
-				getSuggestions: getSuggestions,
+				getSuggestions: this.getSuggestions.bind(this),
 				value: this.state.value })));
 		}
 	}]);
@@ -43350,81 +43668,11 @@ var AppInput = function (_Component) {
 
 exports.default = AppInput;
 
-function handleChange(val) {
-	this.setState({ value: val });
-}
+AppInput.propTypes = {
+	update: _react.PropTypes.func.isRequired
+};
 
-function handleSubmit(e) {
-
-	/*
- 	AdPreview.propTypes = {
-     cardOptions: PropTypes.object.isRequired,
-     placementOptions: PropTypes.shape({
-         type: PropTypes.string.isRequired
-     }).isRequired,
-     productData: PropTypes.object,
-     factory: PropTypes.func.isRequired
- };
- */
-	/*	function loadPreview( data , parentNode){
- 		<AdPreview
- 			     	cardOptions={PREVIEW.CARD_OPTIONS}
- 				    placementOptions={PREVIEW.PLACEMENT_OPTIONS}
- 				    productData = {data}
- 				    factory={createInterstitialFactory}
- 
- 			    ></AdPreview>);
- 	}*/
-
-}
-function getSuggestions(val) {
-	// empty/null -> return promise.resolve []
-	return val ? getURIS(val) : Promise.resolve([]);
-}
-function getURIS(val) {
-	return queryAppStore(val).then(function (arr) {
-		var objs = arr;
-		//add id prop for TokenTextField
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = objs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var obj = _step.value;
-
-				obj.id = obj.uri;
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-
-		return objs;
-	}).catch(function (e) {
-		console.log(e);
-	});
-}
-function queryAppStore(input) {
-	return fetch('https://platform-staging.reelcontent.com/api/public/search/apps?query=' + input).then(function (response) {
-		if (response.status >= 400) {
-			throw new Error("Bad response from server");
-		}
-		return response.json();
-	});
-}
-
-},{"lodash":116,"react":264,"showcase-core/dist/factories/app":265,"showcase/src/components/AdPreview":266,"showcase/src/components/AppSearchItem":267,"showcase/src/components/AppSearchToken":268,"showcase/src/components/TokenTextField":269}],276:[function(require,module,exports){
+},{"react":264,"showcase/src/components/AppSearchItem":267,"showcase/src/components/AppSearchToken":268,"showcase/src/components/TokenTextField":269}],277:[function(require,module,exports){
 'use strict';
 
 var _reactDom = require('react-dom');
@@ -43446,4 +43694,4 @@ function _interopRequireDefault(obj) {
 var root = document.getElementById("app");
 _reactDom2.default.render(_react2.default.createElement(_Views2.default, null), root);
 
-},{"./Views":274,"react":264,"react-dom":126}]},{},[276]);
+},{"./Views":274,"react":264,"react-dom":126}]},{},[277]);

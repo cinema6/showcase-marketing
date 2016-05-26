@@ -2,9 +2,11 @@ module.exports = function(grunt) {
   
 
   grunt.loadNpmTasks('grunt-babel');
-  grunt.loadNpmTasks('grunt-contrib-connect');
-  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-envify');
 
   grunt.initConfig({
     connect: { 
@@ -40,13 +42,25 @@ module.exports = function(grunt) {
          
       }
       
-    }
+    },
+    uglify: {
+      my_target: {
+        files: {
+          'dist/index.min.js': ['src/index.js']
+        }
+      }
+    },
   });
-  grunt.registerTask('server',  [
+  grunt.registerTask('s',  [
     'browserify',
     'connect:server',
     'watch:scripts'
   ]
   );
+  grunt.registerTask('build',[
+      'uglify',
+      'envify'
+
+    ])
 
 };
