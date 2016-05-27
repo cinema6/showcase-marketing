@@ -1,8 +1,7 @@
 module.exports = function(grunt) {
-  
-
   grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
@@ -30,7 +29,7 @@ module.exports = function(grunt) {
       }
     },
     browserify: {
-      dist: {
+      server: {
         options: { 
           watch: true, 
            transform: [
@@ -40,27 +39,54 @@ module.exports = function(grunt) {
         src: ['./src/index.js'],
         dest:  './server/build/index.js',
          
+      },
+      module:{
+        options: { 
+          watch: true,
+          standalone: true, 
+           transform: [
+              ["babelify",{ presets: ["react", "es2015"] }],
+              ["envify", {
+                global: true,
+                NODE_ENV:"production",
+                RC_ENV: grunt.option('rc-env') || 'production'
+              }]
+           ]
+        },
+        src: ['./src/index.js'],
+        dest:  './dist/index.js',
+
       }
       
     },
     uglify: {
       my_target: {
         files: {
-          'dist/index.min.js': ['src/index.js']
+          'dist/index.min.js': ['dist/index.js']
         }
+      }
+    },
+    compress: {
+      main: {
+        options: {
+          mode: 'gzip'
+        },
+        expand: true,
+        cwd: 'dist/',
+        src: ['**/*'],
+        dest: 'dist/'
       }
     },
   });
   grunt.registerTask('s',  [
-    'browserify',
+    'browserify:server',
     'connect:server',
     'watch:scripts'
   ]
   );
   grunt.registerTask('build',[
-      'uglify',
-      'envify'
-
-    ])
+      'browserify:module',
+      'uglify'
+  ]);
 
 };
