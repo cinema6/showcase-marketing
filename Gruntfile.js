@@ -12,7 +12,7 @@ module.exports = function(grunt) {
       server:{
         options: {
           port: 9000,
-          base: 'server/build',
+          base: 'dist/',
           livereload: true,
           open: {
             target: "http://localhost:9000"
@@ -67,16 +67,19 @@ module.exports = function(grunt) {
       }
     },
     compress: {
-      main: {
-        options: {
-          mode: 'gzip'
-        },
+      options: {
+        mode: 'gzip',
+        level: 9
+      },
+      build: {
+        files: [{
         expand: true,
         cwd: 'dist/',
-        src: ['**/*'],
+        src: ['index.min.js'],
         dest: 'dist/'
-      }
-    },
+        }]
+      },
+    }
   });
   grunt.registerTask('s',  [
     'browserify:server',
@@ -85,8 +88,13 @@ module.exports = function(grunt) {
   ]
   );
   grunt.registerTask('build',[
-      'browserify:module',
-      'uglify'
+    'browserify:module',
+    'uglify',
+    'compress:build'
+  ]);
+  grunt.registerTask('module',[
+    'browserify:module',
+    'uglify'
   ]);
 
 };

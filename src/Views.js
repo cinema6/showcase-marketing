@@ -25,7 +25,8 @@ export default class Views extends Component {
                     <AppAd appObj={this.state.value} isProduction = {this.RC_ENV} />
                 
                 : 
-                    <AppInput update = {this.setValue.bind(this)} isProduction = {this.RC_ENV} />
+                    <AppInput update = {this.setValue.bind(this)} isProduction = {this.RC_ENV} 
+                    />
                 }           
             </div>
         );
