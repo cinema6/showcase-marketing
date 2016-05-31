@@ -23,6 +23,18 @@ coverage
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
+# server build
+server/build
+
+# dist build
+dist
+
+# api
+api
+
+# Map files
+/**/*.map
+
 # Dependency directory
 node_modules
 
