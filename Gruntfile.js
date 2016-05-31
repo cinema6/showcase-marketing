@@ -99,5 +99,4 @@ module.exports = function(grunt) {
         'browserify:module',
         'uglify'
     ]);
-
 };
