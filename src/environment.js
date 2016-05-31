@@ -1,3 +1,5 @@
+/* global process */
+
 export const isProduction = (process.env.RC_ENV === 'production');
 export const urls = {
     staging: 'https://platform-staging.reelcontent.com/api/public',

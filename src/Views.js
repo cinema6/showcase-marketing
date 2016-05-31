@@ -1,5 +1,3 @@
-/* global process */
-
 'use strict';
 import React, { Component } from 'react';
 import AppInput from './components/AppInput';
