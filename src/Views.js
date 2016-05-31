@@ -4,13 +4,13 @@
 import React, { Component } from 'react';
 import AppInput from './components/AppInput';
 import AppAd from './components/AppAd';
+
 // controls display of child components { AppInput , AppAd }
 export default class Views extends Component {
     constructor(){
         super(...arguments);
-        this.RC_ENV =  (process.env.RC_ENV === 'production') ? true : false;
         this.state = {
-            value: {}
+            value: null
         };
         this.setValue = this.setValue.bind(this);
     }
@@ -21,12 +21,11 @@ export default class Views extends Component {
     render(){
         return(
             <div>
-                {(Object.keys(this.state.value).length != 0 ) ? 
-                    <AppAd appObj={this.state.value} isProduction = {this.RC_ENV} />
+                { ( this.state.value !== null ) ? 
+                    <AppAd appObj={this.state.value} />
                 
                 : 
-                    <AppInput update = {this.setValue.bind(this)} isProduction = {this.RC_ENV} 
-                    />
+                    <AppInput onUpdate = {this.setValue} />
                 }           
             </div>
         );

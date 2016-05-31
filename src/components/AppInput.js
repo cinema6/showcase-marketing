@@ -3,33 +3,34 @@ import React, { Component, PropTypes } from 'react';
 import TokenTextField from 'showcase/src/components/TokenTextField';
 import AppSearchItem from 'showcase/src/components/AppSearchItem';
 import AppSearchToken from 'showcase/src/components/AppSearchToken';
+import { apiURL } from '../environment';
+
 
 export default class AppInput extends Component {
     constructor(){
         super(...arguments);
         this.state = {
-            value : []
+            appData : []
         };
-        this.apiURL = (this.props.isProduction) ? 
-                    'https://platform.reelcontent.com/api/public':
-                    'https://platform-staging.reelcontent.com/api/public';
 
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.getSuggestions = this.getSuggestions.bind(this);
         this.getIDs = this.getIDs.bind(this);
         this.queryAppStore = this.queryAppStore.bind(this);
     }
     handleChange(val){
-        this.setState({value : val});
+        this.setState({appData : val});
     }
     handleSubmit(e){
         e.preventDefault();
-        fetch(`${this.apiURL}/collateral/product-data?uri=${this.state.value[0].uri}`)
+        fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
             .then((response) => {
                 if (response.status >= 400) {
                     throw new Error('Bad response from server');
                 }else if (response.status === 200){
-                    response.json().then(e=>{
-                        this.props.update(e);
+                    response.json().then( e => {
+                        this.props.onUpdate(e);
                     });
                 }
             });
@@ -42,8 +43,7 @@ export default class AppInput extends Component {
     }
     getIDs(text) {
         return(
-            this.queryAppStore(text).then( arr => {
-                let objs = arr;
+            this.queryAppStore(text).then( objs => {
                 //add id prop for TokenTextField
                 for(let obj of objs){
                     obj.id = obj.uri;
@@ -54,7 +54,7 @@ export default class AppInput extends Component {
     }
     queryAppStore(input) {
         return (
-            fetch(`${this.apiURL}/search/apps?query=${input}`)
+            fetch(`${apiURL}/search/apps?query=${input}`)
                 .then((response) => {
                     if (response.status >= 400) {
                         throw new Error('Bad response from server');
@@ -68,21 +68,21 @@ export default class AppInput extends Component {
             <div className="create-ad step-1 col-md-6 col-md-offset-3 col-xs-12 text-center
             animated fadeIn">
                 <h1 className="text-center">Promote your app</h1>
-                <form onSubmit = {this.handleSubmit.bind(this)} >   
+                <form onSubmit = { this.handleSubmit } >   
                     <div className="app-search form-group text-center">
                         <TokenTextField
-                            onChange = { this.handleChange.bind(this) }
+                            onChange = { this.handleChange }
                             maxValues = { 1 }
                             TokenComponent = { AppSearchToken }
                             SuggestionComponent = { AppSearchItem }
-                            getSuggestions = { this.getSuggestions.bind(this) }
-                            value = { this.state.value } />
+                            getSuggestions = { this.getSuggestions }
+                            value = { this.state.appData } />
                         <span id="helpBlock" className="help-block">
                         Search for your app on iTunes
                         </span>
                         <br />
-                        <button type = 'submit' className='col-sm-6 col-sm-offset-3 col-xs-12 btn 
-                        btn-danger btn-lg'>
+                        <button type = "submit" className= "col-sm-6 col-sm-offset-3 col-xs-12 btn 
+                        btn-danger btn-lg">
                         Generate Preview
                         </button>
                     </div>
@@ -92,6 +92,5 @@ export default class AppInput extends Component {
     }
 }
 AppInput.propTypes = {
-    update: PropTypes.func.isRequired,
-    isProduction : PropTypes.bool.isRequired
+    onUpdate: PropTypes.func.isRequired
 };

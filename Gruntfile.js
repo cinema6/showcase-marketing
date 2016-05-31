@@ -12,7 +12,7 @@ module.exports = function(grunt) {
       server:{
         options: {
           port: 9000,
-          base: 'dist/',
+          base: 'server/build/',
           livereload: true,
           open: {
             target: "http://localhost:9000"
@@ -31,7 +31,10 @@ module.exports = function(grunt) {
     browserify: {
       server: {
         options: { 
-          watch: true, 
+          watch: true,
+          browserifyOptions: {
+            standalone: 'adWidget'
+          }, 
            transform: [
               ["babelify",{ presets: ["react", "es2015"] }]
            ]
@@ -41,9 +44,11 @@ module.exports = function(grunt) {
          
       },
       module:{
-        options: { 
+        options: {
           watch: true,
-          standalone: true, 
+          browserifyOptions: {
+            standalone: 'adWidget'
+          }, 
            transform: [
               ["babelify",{ presets: ["react", "es2015"] }],
               ["envify", {
