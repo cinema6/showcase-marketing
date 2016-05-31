@@ -29,6 +29,12 @@ server/build
 # dist build
 dist
 
+# api
+api
+
+# Map files
+/**/*.map
+
 # Dependency directory
 node_modules
 
