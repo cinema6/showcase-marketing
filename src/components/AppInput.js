@@ -26,7 +26,6 @@ export default class AppInput extends Component {
     handleSubmit(e){
         e.preventDefault();
         try{
-            
             // set URI in localStorage
             localStorage.setItem("appURI", this.state.appData[0].uri);
 
