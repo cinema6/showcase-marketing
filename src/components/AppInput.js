@@ -20,20 +20,31 @@ export default class AppInput extends Component {
         this.queryAppStore = this.queryAppStore.bind(this);
     }
     handleChange(val){
+        // set state
         this.setState({appData : val});
     }
     handleSubmit(e){
         e.preventDefault();
-        fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
-            .then((response) => {
-                if (response.status >= 400) {
-                    throw new Error('Bad response from server');
-                }else if (response.status === 200){
-                    response.json().then( e => {
-                        this.props.onUpdate(e);
-                    });
-                }
-            });
+        try{
+            // set URI in localStorage
+            localStorage.setItem("appURI", this.state.appData[0].uri);
+
+            fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
+                .then((response) => {
+                    if (response.status >= 400) {
+                        throw new Error('Bad response from server');
+                    }else if (response.status === 200){
+                        response.json().then( e => {
+                            this.props.onUpdate(e);
+                        });
+                    }
+                });
+        }catch(e){
+            // no uri found
+            console.log("No app entered. The ad preview requires a selected app.")
+            // clear local storage
+            localStorage.clear();
+        }
     }
     getSuggestions(text) {
         // empty/null -> return promise.resolve []

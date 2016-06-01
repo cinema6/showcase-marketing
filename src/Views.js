@@ -21,8 +21,7 @@ export default class Views extends Component {
             <div>
                 { ( this.state.value !== null ) ? 
                     <AppAd appObj={this.state.value} />
-                
-                : 
+                    :
                     <AppInput onUpdate = {this.setValue} />
                 }           
             </div>

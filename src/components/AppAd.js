@@ -17,8 +17,7 @@ const PREVIEW = {
 export default class AppAd extends Component{
     constructor(){
         super(...arguments);
-        
-    }   
+    }
     render(){
         return(
         <AdPreview
