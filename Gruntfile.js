@@ -6,6 +6,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-envify');
+    grunt.loadNpmTasks('grunt-eslint');
 
     grunt.initConfig({
         connect: { 
@@ -19,6 +20,12 @@ module.exports = function(grunt) {
                     }
                 }
             }
+        },
+        eslint: {
+            options: {
+                configFile: '.eslintrc.json'
+            },
+            code: ['src/**/*.js']
         },
         watch: {
             scripts: {
@@ -60,7 +67,6 @@ module.exports = function(grunt) {
                 src: ['./src/index.js'],
                 dest:  './dist/index.js'
             }
-            
         },
         uglify: {
             my_target: {
@@ -98,5 +104,8 @@ module.exports = function(grunt) {
     grunt.registerTask('module',[
         'browserify:module',
         'uglify'
+    ]);
+    grunt.registerTask('test', [
+        'eslint:code'
     ]);
 };

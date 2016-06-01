@@ -27,7 +27,7 @@ export default class AppInput extends Component {
         e.preventDefault();
         try{
             // set URI in localStorage
-            localStorage.setItem("appURI", this.state.appData[0].uri);
+            localStorage.setItem('appURI', this.state.appData[0].uri);
 
             fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
                 .then((response) => {
@@ -40,8 +40,6 @@ export default class AppInput extends Component {
                     }
                 });
         }catch(e){
-            // no uri found
-            console.log("No app entered. The ad preview requires a selected app.")
             // clear local storage
             localStorage.clear();
         }
