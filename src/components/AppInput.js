@@ -31,16 +31,20 @@ export default class AppInput extends Component {
     }
     handleSubmit(e){
         e.preventDefault();
-        fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
-            .then((response) => {
-                if (response.status >= 400) {
-                    throw new Error('Bad response from server');
-                }else if (response.status === 200){
-                    response.json().then( e => {
-                        this.props.onUpdate(e);
-                    });
-                }
-            });
+        try{
+            fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
+                .then((response) => {
+                    if (response.status >= 400) {
+                        throw new Error('Bad response from server');
+                    }else if (response.status === 200){
+                        response.json().then( e => {
+                            this.props.onUpdate(e);
+                        });
+                    }
+                });
+        }catch(e){
+            // no uri found
+        }
     }
     getSuggestions(text) {
         // empty/null -> return promise.resolve []
