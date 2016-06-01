@@ -22,17 +22,14 @@ export default class AppInput extends Component {
     handleChange(val){
         // set state
         this.setState({appData : val});
-        try{
-            // set URI in localStorage
-            localStorage.setItem("appURI", val[0].uri);
-        }catch(e){
-            // if null, clear storage
-            localStorage.clear();
-        }
     }
     handleSubmit(e){
         e.preventDefault();
         try{
+            
+            // set URI in localStorage
+            localStorage.setItem("appURI", this.state.appData[0].uri);
+
             fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
                 .then((response) => {
                     if (response.status >= 400) {
@@ -46,6 +43,8 @@ export default class AppInput extends Component {
         }catch(e){
             // no uri found
             console.log("No app entered. The ad preview requires a selected app.")
+            // clear local storage
+            localStorage.clear();
         }
     }
     getSuggestions(text) {
