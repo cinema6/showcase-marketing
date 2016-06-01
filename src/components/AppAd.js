@@ -18,9 +18,6 @@ export default class AppAd extends Component{
     constructor(){
         super(...arguments);
     }
-    componentDidMount(){
-        localStorage.setItem("appURI", this.props.appObj.uri);
-    }
     render(){
         return(
         <AdPreview

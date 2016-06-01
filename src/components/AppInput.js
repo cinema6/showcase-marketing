@@ -20,7 +20,14 @@ export default class AppInput extends Component {
         this.queryAppStore = this.queryAppStore.bind(this);
     }
     handleChange(val){
+        // set state
         this.setState({appData : val});
+        try{
+            // set URI in localStorage
+            localStorage.setItem("appURI", val[0].uri);
+        }catch(e){
+            localStorage.clear();
+        }
     }
     handleSubmit(e){
         e.preventDefault();
