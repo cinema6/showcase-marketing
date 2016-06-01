@@ -26,6 +26,7 @@ export default class AppInput extends Component {
             // set URI in localStorage
             localStorage.setItem("appURI", val[0].uri);
         }catch(e){
+            // if null, clear storage
             localStorage.clear();
         }
     }
@@ -44,6 +45,7 @@ export default class AppInput extends Component {
                 });
         }catch(e){
             // no uri found
+            console.log("No app entered. The ad preview requires a selected app.")
         }
     }
     getSuggestions(text) {
