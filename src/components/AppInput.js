@@ -12,7 +12,6 @@ export default class AppInput extends Component {
         this.state = {
             appData : []
         };
-
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.getSuggestions = this.getSuggestions.bind(this);
@@ -76,7 +75,7 @@ export default class AppInput extends Component {
         return(
             <div className="create-ad step-1 col-md-6 col-md-offset-3 col-xs-12 text-center
             animated fadeIn">
-                <h1 className="text-center">Promote your app</h1>
+                <h1 className="text-center"> {this.props.text.titleText} </h1>
                 <form onSubmit = { this.handleSubmit } >   
                     <div className="app-search form-group text-center">
                         <TokenTextField
@@ -87,12 +86,12 @@ export default class AppInput extends Component {
                             getSuggestions = { this.getSuggestions }
                             value = { this.state.appData } />
                         <span id="helpBlock" className="help-block">
-                        Search for your app on iTunes
+                        {this.props.text.subtitleText}
                         </span>
                         <br />
                         <button type = "submit" className= "col-sm-6 col-sm-offset-3 col-xs-12 btn 
                         btn-danger btn-lg">
-                        Generate Preview
+                        {this.props.text.buttonText}
                         </button>
                     </div>
                 </form>
@@ -101,5 +100,6 @@ export default class AppInput extends Component {
     }
 }
 AppInput.propTypes = {
-    onUpdate: PropTypes.func.isRequired
+    onUpdate: PropTypes.func.isRequired,
+    text: PropTypes.object.isRequired
 };

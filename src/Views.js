@@ -1,5 +1,5 @@
 'use strict';
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import AppInput from './components/AppInput';
 import AppAd from './components/AppAd';
 
@@ -20,11 +20,21 @@ export default class Views extends Component {
         return(
             <div>
                 { ( this.state.value !== null ) ? 
-                    <AppAd appObj={this.state.value} />
+                    <AppAd 
+                        appObj={this.state.value} 
+                        showLoadingAnimation = {this.props.options.showLoadingAnimation} />
                     :
-                    <AppInput onUpdate = {this.setValue} />
+                    <AppInput 
+                        onUpdate = {this.setValue} 
+                        text={{ titleText: this.props.options.titleText, 
+                                subtitleText: this.props.options.subtitleText, 
+                                buttonText: this.props.options.buttonText}} />
                 }           
             </div>
         );
     }
 }
+
+Views.propTypes = {
+    options: PropTypes.object.isRequired
+};
