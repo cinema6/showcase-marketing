@@ -27,7 +27,7 @@ export default class AppAd extends Component{
             factory = {createInterstitialFactory} 
             apiRoot = {apiURL}
             showLoadingAnimation={this.props.showLoadingAnimation}
-            loadDelay= {3000}
+            loadDelay= { this.props.showLoadingAnimation ? 3000 : 0 }
             />
         );
     }
