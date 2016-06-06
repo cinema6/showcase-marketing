@@ -43,7 +43,10 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-dev-server": "^0.1.0",
     "grunt-envify": "0.0.3",
-    "grunt-eslint": "^18.1.0"
+    "grunt-eslint": "^18.1.0",
+    "grunt-c6-util": "git+ssh://git@github.com:cinema6/c6-grunt-util",
+    "grunt-git-assist": "cinema6/grunt-git-assist"
+
   },
   "dependencies": {
     "es6-promise": "^3.2.1",

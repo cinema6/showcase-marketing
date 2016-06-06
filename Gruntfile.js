@@ -7,6 +7,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-envify');
     grunt.loadNpmTasks('grunt-eslint');
+    grunt.loadNpmTasks('grunt-git-assist');
 
     grunt.initConfig({
         connect: { 
@@ -26,6 +27,13 @@ module.exports = function(grunt) {
                 configFile: '.eslintrc.json'
             },
             code: ['src/**/*.js']
+        },
+        git_describe_tags:{
+            options: {
+                config: function(version) {
+                    grunt.config.set('_version', version);
+                }
+            }
         },
         watch: {
             scripts: {
@@ -83,9 +91,8 @@ module.exports = function(grunt) {
             build: {
                 files: [{
                     expand: true,
-                    cwd: 'dist/',
-                    src: ['index.min.js'],
-                    dest: 'dist/'
+                    src: 'dist/index.js',
+                    dest: 'dist/<%= _version %>/'
                 }]
             }
         }
@@ -97,11 +104,13 @@ module.exports = function(grunt) {
     ]
     );
     grunt.registerTask('build',[
+        'git_describe_tags',
         'browserify:module',
         'uglify',
         'compress:build'
     ]);
     grunt.registerTask('module',[
+        'git_describe_tags',
         'browserify:module',
         'uglify'
     ]);
