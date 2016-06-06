@@ -26,12 +26,14 @@ export default class AppAd extends Component{
             productData = {this.props.appObj}
             factory = {createInterstitialFactory} 
             apiRoot = {apiURL}
-
+            showLoadingAnimation={this.props.showLoadingAnimation}
+            loadDelay= {3000}
             />
         );
     }
 }   
 
 AppAd.propTypes = {
-    appObj: PropTypes.object.isRequired
+    appObj: PropTypes.object.isRequired,
+    showLoadingAnimation: PropTypes.bool.isRequired
 };
