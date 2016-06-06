@@ -20,9 +20,15 @@ export default class Views extends Component {
         return(
             <div>
                 { ( this.state.value !== null ) ? 
-                    <AppAd appObj={this.state.value} showLoadingAnimation = {this.props.options.showLoadingAnimation} />
+                    <AppAd 
+                        appObj={this.state.value} 
+                        showLoadingAnimation = {this.props.options.showLoadingAnimation} />
                     :
-                    <AppInput onUpdate = {this.setValue} text={{titleText: this.props.options.titleText, subtitleText: this.props.options.subtitleText, buttonText: this.props.options.buttonText}} />
+                    <AppInput 
+                        onUpdate = {this.setValue} 
+                        text={{ titleText: this.props.options.titleText, 
+                                subtitleText: this.props.options.subtitleText, 
+                                buttonText: this.props.options.buttonText}} />
                 }           
             </div>
         );
