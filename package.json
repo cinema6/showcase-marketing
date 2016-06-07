@@ -1,6 +1,6 @@
 {
   "name": "showcase-marketing",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Marketing widgets for showcase",
   "main": "src/index.js",
   "browserify": {
@@ -49,7 +49,6 @@
     "grunt-eslint": "^18.1.0",
     "grunt-c6-util": "cinema6/c6-grunt-util",
     "grunt-git-assist": "cinema6/grunt-git-assist"
-
   },
   "dependencies": {
     "es6-promise": "^3.2.1",
