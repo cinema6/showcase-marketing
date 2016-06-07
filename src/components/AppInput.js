@@ -78,7 +78,7 @@ export default class AppInput extends Component {
     }
     render() {
         return(
-            <div className="create-ad step-1 col-md-6 col-md-offset-3 col-xs-12 text-center
+            <div className="create-ad step-1 text-center
             animated fadeIn">
                 <h1 className="text-center"> {this.props.text.titleText} </h1>
                 <form onSubmit = { this.handleSubmit } >   
