@@ -4,7 +4,10 @@ import TokenTextField from 'showcase/src/components/TokenTextField';
 import AppSearchItem from 'showcase/src/components/AppSearchItem';
 import AppSearchToken from 'showcase/src/components/AppSearchToken';
 import { apiURL } from '../environment';
+import { polyfill as promisePoly } from 'es6-promise';
+import 'isomorphic-fetch';
 
+promisePoly();
 
 export default class AppInput extends Component {
     constructor(){
