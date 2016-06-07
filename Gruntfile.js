@@ -8,6 +8,17 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-envify');
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-git-assist');
+    grunt.loadNpmTasks('grunt-c6-util');
+
+    var fs = require('fs'),
+        path = require('path'),
+        aws_auth;
+
+    if ((process.env.HOME) && (fs.existsSync(path.join(process.env.HOME,'.aws.json')))){
+        aws_auth = grunt.file.readJSON(
+                path.join(process.env.HOME,'.aws.json')
+        );
+    }
 
     grunt.initConfig({
         connect: { 
@@ -20,6 +31,49 @@ module.exports = function(grunt) {
                         target: 'http://localhost:9000'
                     }
                 }
+            }
+        },
+        s3:{
+            options: {
+                key: aws_auth.accessKeyId,
+                secret: aws_auth.secretAccessKey,
+                access: 'public-read'
+            },
+            staging: {
+                options: {
+                    bucket: 'c6.dev'
+                },
+                upload: [
+                    {
+                        src: [
+                            'dist/<%= _version %>/*.js'
+                        ],
+                        dest: 'ext/showcase-marketing/',
+                        rel: 'dist/',
+                        options: {
+                            CacheControl: 'max-age=31556926',
+                            ContentEncoding: 'gzip'
+                        }
+                    },
+                ]
+            },
+            production: {
+                options: {
+                    bucket: 'c6.ext'
+                },
+                upload: [
+                    {
+                        src: [
+                            'dist/<%= _version %>/*.js'
+                        ],
+                        dest: 'showcase-marketing/',
+                        rel: 'dist/',
+                        options: {
+                            CacheControl: 'max-age=31556926',
+                            ContentEncoding: 'gzip'
+                        }
+                    },
+                ]
             }
         },
         eslint: {
@@ -73,7 +127,7 @@ module.exports = function(grunt) {
                     ]
                 },
                 src: ['./src/index.js'],
-                dest:  './dist/index.js'
+                dest:  './dist/<%= _version %>/index.js'
             }
         },
         uglify: {
@@ -81,6 +135,11 @@ module.exports = function(grunt) {
                 files: {
                     'dist/index.min.js': ['dist/index.js']
                 }
+            },
+            build:{
+                files: {
+                    './dist/<%= _version %>/index.min.js': ['dist/<%= _version %>/index.js']
+                }  
             }
         },
         compress: {
@@ -91,8 +150,8 @@ module.exports = function(grunt) {
             build: {
                 files: [{
                     expand: true,
-                    src: 'dist/index.js',
-                    dest: 'dist/<%= _version %>/'
+                    src: 'dist/<%= _version %>/index.min.js',
+                    dest: './index.min.js'
                 }]
             }
         }
@@ -106,8 +165,8 @@ module.exports = function(grunt) {
     grunt.registerTask('build',[
         'git_describe_tags',
         'browserify:module',
-        'uglify',
-        'compress:build'
+        'uglify:build',
+        'compress'
     ]);
     grunt.registerTask('module',[
         'git_describe_tags',
@@ -116,5 +175,13 @@ module.exports = function(grunt) {
     ]);
     grunt.registerTask('test', [
         'eslint:code'
+    ]);
+    grunt.registerTask('publish:staging', [
+        'build',
+        's3:staging'
+    ]);
+    grunt.registerTask('publish:production', [
+        'build',
+        's3:production'
     ]);
 };

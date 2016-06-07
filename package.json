@@ -17,7 +17,9 @@
     ]
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "deploy:staging": "npm test && grunt publish:staging --rc-env staging",
+    "deploy:production": "npm test && grunt publish:production --rc-env production"
   },
   "repository": {
     "type": "git",
@@ -45,7 +47,7 @@
     "grunt-dev-server": "^0.1.0",
     "grunt-envify": "0.0.3",
     "grunt-eslint": "^18.1.0",
-    "grunt-c6-util": "git+ssh://git@github.com:cinema6/c6-grunt-util",
+    "grunt-c6-util": "cinema6/c6-grunt-util",
     "grunt-git-assist": "cinema6/grunt-git-assist"
 
   },
