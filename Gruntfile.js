@@ -150,8 +150,8 @@ module.exports = function(grunt) {
             build: {
                 files: [{
                     expand: true,
-                    src: 'dist/<%= _version %>/index.min.js',
-                    dest: './index.min.js'
+                    src: ['dist/<%= _version %>/index.min.js', 'dist/<%= _version %>/index.js'],
+                    dest: './'
                 }]
             }
         }
