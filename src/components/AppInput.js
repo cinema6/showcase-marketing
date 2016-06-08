@@ -98,8 +98,7 @@ export default class AppInput extends Component {
                             disabled = {this.state.isSubmitting} 
                             type = "submit" 
                             className= {
-                                classnames('col-sm-6','col-sm-offset-3', 'col-xs-12', 'btn', 
-                                'btn-danger', 'btn-lg', 
+                                classnames('btn', 'btn-danger', 'btn-lg', 
                                 {'btn-waiting' : this.state.isSubmitting})}>
                             {this.props.text.buttonText}
                         </button>
