@@ -3,6 +3,7 @@ import React, { Component, PropTypes } from 'react';
 import TokenTextField from 'showcase/src/components/TokenTextField';
 import AppSearchItem from 'showcase/src/components/AppSearchItem';
 import AppSearchToken from 'showcase/src/components/AppSearchToken';
+import classnames from 'classnames';
 import { apiURL } from '../environment';
 import { polyfill as promisePoly } from 'es6-promise';
 import 'isomorphic-fetch';
@@ -13,7 +14,8 @@ export default class AppInput extends Component {
     constructor(){
         super(...arguments);
         this.state = {
-            appData : []
+            appData : [],
+            isSubmitting: false
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -25,12 +27,12 @@ export default class AppInput extends Component {
         // set state
         this.setState({appData : val});
     }
-    handleSubmit(e){
+    handleSubmit(e){       
         e.preventDefault();
         try{
             // set URI in localStorage
             localStorage.setItem('appURI', this.state.appData[0].uri);
-
+            this.toggleSubmit();
             fetch(`${apiURL}/collateral/product-data?uri=${this.state.appData[0].uri}`)
                 .then((response) => {
                     if (response.status >= 400) {
@@ -45,6 +47,9 @@ export default class AppInput extends Component {
             // clear local storage
             localStorage.clear();
         }
+    }
+    toggleSubmit(){
+        this.setState({isSubmitting : !this.state.isSubmitting});
     }
     getSuggestions(text) {
         // empty/null -> return promise.resolve []
@@ -76,7 +81,7 @@ export default class AppInput extends Component {
     }
     render() {
         return(
-            <div className="create-ad step-1 col-md-6 col-md-offset-3 col-xs-12 text-center
+            <div className="create-ad step-1 text-center
             animated fadeIn">
                 <h1 className="text-center"> {this.props.text.titleText} </h1>
                 <form onSubmit = { this.handleSubmit } >   
@@ -92,14 +97,18 @@ export default class AppInput extends Component {
                         {this.props.text.subtitleText}
                         </span>
                         <br />
-                        <button type = "submit" className= "col-sm-6 col-sm-offset-3 col-xs-12 btn 
-                        btn-danger btn-lg">
-                        {this.props.text.buttonText}
+                        <button 
+                            disabled = {this.state.isSubmitting} 
+                            type = "submit" 
+                            className= {
+                                classnames('btn', 'btn-danger', 'btn-lg', 
+                                {'btn-waiting' : this.state.isSubmitting})}>
+                            {this.props.text.buttonText}
                         </button>
                     </div>
                 </form>
             </div>
-        );
+        ); 
     }
 }
 AppInput.propTypes = {
