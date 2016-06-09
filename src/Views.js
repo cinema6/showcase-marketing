@@ -22,7 +22,8 @@ export default class Views extends Component {
                 { ( this.state.value !== null ) ? 
                     <AppAd 
                         appObj={this.state.value} 
-                        showLoadingAnimation = {this.props.options.showLoadingAnimation} />
+                        showLoadingAnimation = {this.props.options.showLoadingAnimation}
+                        interval = {this.props.options.interval} />
                     :
                     <AppInput 
                         onUpdate = {this.setValue} 
