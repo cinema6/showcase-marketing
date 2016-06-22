@@ -56,7 +56,7 @@
     "lodash": "^4.13.1",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
-    "showcase": "cinema6/showcase",
+    "showcase": "cinema6/showcase#v0.10.0",
     "showcase-core": "^1.3.0",
     "classnames": "~2.2.5"
   }
