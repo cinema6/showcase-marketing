@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <div style="width:500px;height:700px">
+        <div id="test"></div>
+    </div>
+    <script src='build/index.js'></script>
+    <script>
+        var widget = adWidget.render(document.getElementById("test"), {
+            titleText : "See how it works",
+            subtitleText: "Search for your iOS app",
+            buttonText: "Preview your ad",
+            showLoadingAnimation: false
+        });
+
+        widget.on('newValue', function(obj) {
+            console.log('HI', obj);
+        });
+    </script>
+</body>
+</html>
