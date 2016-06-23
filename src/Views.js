@@ -39,5 +39,5 @@ export default class Views extends Component {
 
 Views.propTypes = {
     options: PropTypes.object.isRequired,
-    emitter: PropTypes.object.isRequired
+    emitter: PropTypes.instanceOf(EventEmitter).isRequired
 };
