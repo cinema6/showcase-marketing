@@ -2,6 +2,7 @@
 import React, { Component, PropTypes } from 'react';
 import AppInput from './components/AppInput';
 import AppAd from './components/AppAd';
+import { EventEmitter } from 'events';
 
 // controls display of child components { AppInput , AppAd }
 export default class Views extends Component {
