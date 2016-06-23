@@ -6,16 +6,16 @@ Marketing widgets for the Showcase family of products.
 #### Get a container element
 The app will be inserted into this DOM element.
 ```
-var container = document.getElementById("root");
+var container = document.getElementById('root');
 ```
 
 #### Configure your settings
 Default values will be used if the options are not set.
 ```
 var options = {
-    titleText : "Your title Here",
-    subtitleText: "Your sub here",
-    buttonText: "click me",
+    titleText : 'Your title Here',
+    subtitleText: 'Your sub here',
+    buttonText: 'click me',
     showLoadingAnimation: false
 };
 ```
@@ -23,10 +23,10 @@ var options = {
 #### Render the widget
 Call the widget's `render()` method with the container element and options.
 ```
-var widget = adWidget.render( parent , options );
+var widget = adWidget.render( container , options );
 ```
 
-#### Add event handler for "showPreview" event
+#### Add event handler for 'showPreview' event
 The `showPreview` event is fired when the user previews their ad.
 ```
 widget.on('showPreview', function() {
