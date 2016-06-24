@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Showcase Marketing Widget</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 14px;
+            line-height: 1.42857143;
+            overflow-x: hidden;
+        }
+        .header-container {
+            background: #fff;
+        }
+        .phone-screen {
+            width: 244px;
+            height: 434px;
+            float: left;
+            display: block;
+            background: #0CA2D9;
+            color: #fff;
+            text-shadow: none;
+            text-align: center;
+        }
+            .phone-screen h1 {
+                font-size: 1.325em;
+                font-weight: 300;
+                text-shadow: none;
+                margin: 10px;
+                margin-top: 30%;
+                text-align: center;
+            }
+            .phone-screen button.btn {
+                background: #363D42;
+                border: 0;
+                padding: 10px 10px;
+                color: #eee;
+                border-radius: 3px;
+                display: block;
+                width: 90%;
+                margin: 10px auto;
+            }
+            .phone-screen .phone-frame p {
+                display: none;
+            }
+        div.phone-frame + p {
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .app-search {
+            padding: 0 5px;
+        }
+            .app-search-input {
+                padding: 0;
+                background: #fff;
+            }
+                .app-search-input .input-hidden {
+                    height: 36px;
+                    border: 0;
+                    width: 94%;
+                    margin: 0;
+                    padding: 0 5px;
+                    vertical-align: top;
+                    outline: 0;
+                    border-radius: 0;
+                    background: transparent;
+                }
+            .app-search-input ul {
+                display: flex;
+                padding: 0;
+                list-style-type: none;
+            }
+                .app-search-input ul li.app-selected-wrap {
+                    float: left;
+                    max-width: 90%;
+                    width: auto;
+                }
+                .app-search-input ul li {
+                    float: left;
+                    width: 100%;
+                }
+            .app-search-input .app-selected img {
+                float: left;
+                margin: 2px;
+                max-width: 32px;
+                max-height: 32px;
+            }
+            .app-search-input .app-selected .app-title {
+                font-weight: 400;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                word-break: break-all;
+                word-wrap: break-word;
+                margin: 0;
+                line-height: 36px;
+                margin-left: 40px;
+            }
+        .app-search-results ul {
+            padding:0;
+            background: #fff;
+            box-shadow: 0 5px 5px rgba(28,28,28, 0.5);
+            list-style-type: none;
+            margin: 0 3px;
+            max-height: 240px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            position: absolute;
+            top: 40px;
+            left: 5px;
+            right: 5px;
+            z-index: 10;
+        }
+            .app-search-results li.app-results.app-searching,
+            .app-search-results li.app-results.not-found,
+            .app-search-results li.app-results.app-item {
+                display: block;
+                min-height: 60px;
+                text-align: left;
+                padding: 10px;
+                background: #fff;
+                border-bottom: 1px solid #ccc;
+            }
+            .app-search-results li.app-results.not-found,
+            .app-search-results li.app-results.app-searching {
+                font-size: 18px;
+                text-align: center;
+                line-height: 60px;
+                color: #666;
+            }
+                .app-search-results li.app-results.app-item.active {
+                    background: #f5f5f5;
+                }
+                .app-results.app-item .app-icon {
+                    width: 40px;
+                    height: 60px;
+                    display: inline-block;
+                    float: left;
+                    margin-right: 10px;
+                }
+                    .app-results.app-item .app-icon img {
+                        width: 40px;
+                        height: auto;
+                        max-height: 40px;
+                        border-radius: 10px;
+                        border: 1px solid #ccc;
+                        box-sizing: border-box;
+                    }
+                .app-results.app-item .app-title {
+                    overflow: hidden;
+                    font-weight: 400;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    word-break: break-all;
+                    word-wrap: break-word;
+                    margin: 0;
+                    line-height: 22px;
+                    color: #0CA2D9;
+                }
+                .app-results.app-item .app-author {
+                    color: #888;
+                    display: block;
+                    margin: 0;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    word-break: break-all;
+                    word-wrap: break-word;
+                    margin: 0;
+                }
+                .app-results.app-item .app-rating {
+                    display: inline-block;
+                    margin: 0;
+                    width: 100px;
+                    color: #0CA2D9;
+                }
+                .app-results.app-item .app-cost {
+                    display: inline-block;
+                    margin: 0;
+                    color: #0CA2D9;
+                }
+        .app-search {
+            padding: 0 5px;
+            position: relative;
+            height: 340px;
+        }
+        @media screen and (max-width: 680px) {
+            .fader {
+                position: relative;
+                padding-bottom: 188px;
+                margin-top: 80px;
+            }
+            .fader:before {
+                content: 'try now';
+                text-align: left;
+                top: -60px;
+                color: #777;
+                font-weight: 400;
+                background: url(img/small-arrow.png) no-repeat 140px top;
+                padding-left: 80px;
+                padding-top: 4px;
+                font-size: 16px;
+            }
+        }
+        .app-search-input ul li:first-of-type + li .input-hidden::-webkit-input-placeholder {
+            color: transparent !important;
+        }
+        .app-search-input ul li:first-of-type + li .input-hidden::-moz-input-placeholder {
+            color: transparent !important;
+        }
+        .app-search-input ul li:first-of-type + li .input-hidden::-ms-input-placeholder {
+            color: transparent !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="fader" style="margin: 10% 40%;">
+        <div class="flexslider1">
+            <div id="test" class="phone-screen" style="position:relative;">
+            </div>
+        </div>
+    </div>
+    <script src='build/index.js'></script>
+    <script>
+        var widget = adWidget.render(document.getElementById("test"), {
+            titleText : "See how it works",
+            subtitleText: "Search for your iOS app",
+            buttonText: "Preview your ad",
+            showLoadingAnimation: false
+        });
+
+        widget.on('showPreview', function(obj) {
+            console.log('showing!', obj);
+        });
+    </script>
+</body>
+</html>

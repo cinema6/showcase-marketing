@@ -2,6 +2,7 @@
 import React, { Component, PropTypes } from 'react';
 import AppInput from './components/AppInput';
 import AppAd from './components/AppAd';
+import { EventEmitter } from 'events';
 
 // controls display of child components { AppInput , AppAd }
 export default class Views extends Component {
@@ -14,6 +15,7 @@ export default class Views extends Component {
     }
     // updates View value state (app object)
     setValue(obj) {
+        this.props.emitter.emit('showPreview', obj);
         this.setState( {value: obj} );       
     }
     render(){
@@ -37,5 +39,6 @@ export default class Views extends Component {
 }
 
 Views.propTypes = {
-    options: PropTypes.object.isRequired
+    options: PropTypes.object.isRequired,
+    emitter: PropTypes.instanceOf(EventEmitter).isRequired
 };

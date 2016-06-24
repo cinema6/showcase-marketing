@@ -25,7 +25,7 @@ module.exports = function(grunt) {
             server:{
                 options: {
                     port: 9000,
-                    base: 'server/build/',
+                    base: 'server/',
                     livereload: true,
                     open: {
                         target: 'http://localhost:9000'
