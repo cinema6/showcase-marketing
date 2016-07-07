@@ -386,7 +386,7 @@ describe('Checklist Lambda Function', function() {
 
             it('should have called the decrypt method with a CiphertextBlob', function() {
                 expect(decryptSpy).toHaveBeenCalledWith({
-                    CiphertextBlob: new Buffer(state.config.encrypted, 'base64')
+                    CiphertextBlob: jasmine.any(Buffer)
                 }, jasmine.any(Function));
             });
 
