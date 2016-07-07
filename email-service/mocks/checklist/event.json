@@ -1,0 +1,21 @@
+{
+    "From": "sender@example.com",
+    "To": "smunson@reelcontent.com",
+    "TemplateId": 741783,
+    "TemplateModel": {
+        "product_name": "Reelcontent, Inc.",
+        "total": "$50",
+        "name": "Scott Munson",
+        "statement_name": "Invoice #101",
+        "invoice_id": "Invoice #101",
+        "date": "5/25/16",
+        "invoice_details": [
+            {
+                "description": "Some awesome thing",
+                "amount": "$50"
+            }
+        ],
+        "product_address_line1": "555 Some Street",
+        "product_address_line2": "Suite 999"
+    }
+}
