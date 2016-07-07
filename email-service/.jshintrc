@@ -1,0 +1,27 @@
+{
+  "indent" : 4,
+  "browser": true,
+  "esnext": true,
+  "bitwise": true,
+  "camelcase": true,
+  "curly": true,
+  "eqeqeq": true,
+  "immed": true,
+  "latedef": "nofunc",
+  "newcap": true,
+  "noarg": true,
+  "quotmark": "single",
+  "regexp": true,
+  "undef": true,
+  "unused": true,
+  "trailing": true,
+  "smarttabs": true,
+  "maxlen": 100,
+  "globals": {
+    "require"   : true,
+    "define"    : true,
+    "module"    : true,
+    "process"   : true,
+    "__dirname" : true
+  }
+}
