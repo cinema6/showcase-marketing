@@ -63,7 +63,7 @@ module.exports = function(grunt) {
         lambda.handler(evt, context);
     }
 
-    function newBuild(funcName, filePath, doneFunc) {
+    function buildLambda(funcName, filePath, doneFunc) {
         var exec = require('child_process').exec,
             zip = new require('adm-zip')(),
             zipPath;
