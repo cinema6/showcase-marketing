@@ -1,4 +1,7 @@
 {
+    "firstName": "Scott",
+    "lastName": "Munson",
+    "hubspotLead": true,
     "From": "sender@example.com",
     "To": "smunson@reelcontent.com",
     "TemplateId": 741783,
