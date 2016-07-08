@@ -1,9 +1,11 @@
 /* globals Buffer, console, global */
 
 var q = require('q');
-var aws = require('aws-sdk');
 var ld = require('lodash');
+var aws = require('aws-sdk');
+var https = require('https');
 var postmark = require('postmark');
+var querystring = require('querystring');
 
 var lib = {};
 
@@ -13,7 +15,51 @@ lib.success = function(state) {
 
 lib.sendHubspot = function(state) {
     // TODO: send something to Hubspot?
-    return q(state);
+    var config = state.config,
+        data = state.event.body,
+        headers = state.event.params.header,
+        cookieMatch = headers.Cookie && headers.Cookie.match(/hubspotutk=([^\s;]+)/),
+        trackingCookie = cookieMatch ? cookieMatch[1] : null,
+        hsContext = trackingCookie ? { hutk: trackingCookie } : {},
+        body = querystring.stringify({
+            firstname: data.firstName,
+            lastname: data.lastName,
+            email: data.To,
+            'hs_context': JSON.stringify(hsContext)
+        }),
+        options = {
+            host: 'forms.hubspot.com',
+            port: 443,
+            method: 'POST',
+            path: '/uploads/form/v2/' + config.hubspot.portal + '/' + config.hubspot.form,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': body.length
+            }
+        };
+
+    if (!data.hubspotLead) {
+        return q(state);
+    }
+
+    return q.Promise(function(resolve, reject) {
+        var req = https.request(options, function(response) {
+            var status = response.statusCode;
+
+            if (status === 204 || status === 302) {
+                return resolve(state);
+            } else {
+                return reject('Hubspot request failed, status code: ' + status);
+            }
+        });
+
+        req.on('error', function (err) {
+            return reject(err);
+        });
+
+        req.write(body);
+        req.end();
+    }).catch(lib.handleError('sendHubspot'));
 };
 
 lib.sendPostmark = function(state) {
@@ -26,7 +72,7 @@ lib.sendPostmark = function(state) {
             TemplateModel: state.model,
             InlineCss: true,
             From: config.postmark.from,
-            To: state.event.To,
+            To: state.event.body.To,
             TrackOpens: true
             // Tag: template,
             // Attachments: email.attachments.map(function(attachment, index) {
@@ -51,7 +97,7 @@ lib.prepareModel = function(state) {
     // we have not determined what data will be POSTed
     // from the front end. We'll likely need some logic
     // to map/convert data to something usable for Postmark
-    state.model = state.event.TemplateModel;
+    state.model = state.event.body.TemplateModel;
     return q(state);
 };
 
