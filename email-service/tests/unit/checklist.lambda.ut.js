@@ -3,19 +3,9 @@ describe('Checklist Lambda Function', function() {
 
     var state, event, context;
 
-    var success, failure, result,
+    var deferreds, success, failure, result,
         response, config, region, key;
 
-    // deferreds
-    var deferreds;
-    var getConfigDeferred,
-        parseConfigDeferred,
-        prepareModelDeferred,
-        sendPostmarkDeferred,
-        sendHubspotDeferred,
-        libSuccessDeferred;
-
-    // spies + callbacks
     var getObjectSpy, getObjectCallback,
         decryptSpy, decryptCallback,
         sendEmailSpy, sendEmailCallback;
