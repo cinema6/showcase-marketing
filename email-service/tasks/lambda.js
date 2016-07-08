@@ -100,7 +100,7 @@ module.exports = function(grunt) {
                 if (!error && !stderr) {
                     grunt.log.writelns('Zipping: ', zipPath);
 
-                    zip.addLocalFolder('dist/' + funcName + '/node_modules', 'node_modules');
+                    zip.addLocalFolder('dist/' + funcName + '/node_modules', 'node_modules', new RegExp(/^((?!aws-sdk).)*$/));
 
                     fs.ensureDirSync('dist');
 
