@@ -1,5 +1,5 @@
 describe('Checklist Lambda Function', function() {
-    var lib, aws, postmark, q;
+    var lib, aws, postmark, q, https, querystring;
 
     var state, event, context;
 
@@ -8,7 +8,8 @@ describe('Checklist Lambda Function', function() {
 
     var getObjectSpy, getObjectCallback,
         decryptSpy, decryptCallback,
-        sendEmailSpy, sendEmailCallback;
+        sendEmailSpy, sendEmailCallback,
+        hubspotSpy, hubspotCallback;
 
     function S3() {}
 
@@ -25,11 +26,15 @@ describe('Checklist Lambda Function', function() {
         aws = require('aws-sdk');
         postmark = require('postmark');
         q = require('q');
+        https = require('https');
+        querystring = require('querystring');
 
         success = jasmine.createSpy('success()');
         failure = jasmine.createSpy('failure()');
 
-        event = {};
+        event = {
+            body: {}
+        };
         context = {
             functionName: 'checklistLambda',
             functionVersion: '$LATEST'
@@ -75,6 +80,8 @@ describe('Checklist Lambda Function', function() {
         decryptCallback = null;
         sendEmailSpy = null;
         sendEmailCallback = null;
+        hubspotSpy = null;
+        hubspotCallback = null;
     });
 
     describe('handler(event, context, callback)', function() {
@@ -446,7 +453,7 @@ describe('Checklist Lambda Function', function() {
 
     describe('prepareModel(state)', function() {
         beforeEach(function(done) {
-            state.event.TemplateModel = {
+            state.event.body.TemplateModel = {
                 name: 'Scott',
                 email: 'scott@cinema6.com'
             };
@@ -461,7 +468,7 @@ describe('Checklist Lambda Function', function() {
         });
 
         it('should set the model prop on the state', function() {
-            expect(state.model).toEqual(state.event.TemplateModel);
+            expect(state.model).toEqual(state.event.body.TemplateModel);
             expect(success).toHaveBeenCalledWith(state);
         });
     });
@@ -486,7 +493,7 @@ describe('Checklist Lambda Function', function() {
             };
 
             state.model = {};
-            state.event.To = 'scott@cinema6.com';
+            state.event.body.To = 'scott@cinema6.com';
 
             result = lib.sendPostmark(state).then(success, failure);
 
@@ -507,7 +514,7 @@ describe('Checklist Lambda Function', function() {
                 TemplateModel: state.model,
                 InlineCss: true,
                 From: state.config.postmark.from,
-                To: state.event.To,
+                To: state.event.body.To,
                 TrackOpens: true
             }, jasmine.any(Function));
         });
@@ -539,18 +546,209 @@ describe('Checklist Lambda Function', function() {
     });
 
     describe('sendHubspot(state)', function() {
-        beforeEach(function(done) {
-            result = lib.sendHubspot(state).then(success);
+        var requestErrorCallback,
+            requestObject;
 
-            setTimeout(done);
+        beforeEach(function() {
+            spyOn(querystring, 'stringify').and.callThrough();
+
+            hubspotSpy = jasmine.createSpy('https.request()')
+                .and.callFake(function(options, cb) {
+                    hubspotCallback = cb;
+
+                    requestObject = {
+                        on: jasmine.createSpy('request.on()')
+                            .and.callFake(function(eventName, cb) {
+                                requestErrorCallback = cb;
+                            }),
+                        write: jasmine.createSpy('request.write()'),
+                        end: jasmine.createSpy('request.end()')
+                    };
+
+                    return requestObject;
+                });
+
+            https.request = hubspotSpy;
+
+            state.config = {
+                hubspot: {
+                    portal: 12345,
+                    form: 'abc-123'
+                }
+            };
+            state.event = {
+                params: {
+                    header: {
+                        Cookie: 'something=else'
+                    }
+                },
+                body: {
+                    firstName: 'Scott',
+                    lastName: 'Munson',
+                    To: 'smunson@reelcontent.com'
+                }
+            };
         });
 
-        it('should return a promise', function() {
-            expect(result.then).toBeDefined();
+        describe('when hubspotLead flag is set to false', function() {
+            beforeEach(function(done) {
+                state.event.body.hubspotLead = false;
+
+                result = lib.sendHubspot(state).then(success);
+
+                setTimeout(done);
+            });
+
+            it('should return a promise', function() {
+                expect(result.then).toBeDefined();
+            });
+
+            it('should immediately resolve the promise with the state', function() {
+                expect(success).toHaveBeenCalledWith(state);
+                expect(https.request).not.toHaveBeenCalled();
+            });
         });
 
-        it('should immediately resolve the promise with the state', function() {
-            expect(success).toHaveBeenCalledWith(state);
+        describe('when hubspotLead flag is set to true', function() {
+            beforeEach(function() {
+                state.event.body.hubspotLead = true;
+            });
+
+            describe('when there is a hubspotutk cookie', function() {
+                var body;
+
+                beforeEach(function(done) {
+                    body = querystring.stringify({
+                        firstname: state.event.body.firstName,
+                        lastname: state.event.body.lastName,
+                        email: state.event.body.To,
+                        hs_context: JSON.stringify({ hutk: 'hb123'})
+                    });
+                    querystring.stringify.calls.reset();
+
+                    state.event.params.header.Cookie = 'something=else;hubspotutk=hb123;more=coookies;';
+
+                    result = lib.sendHubspot(state).then(success, failure);
+
+                    setTimeout(done);
+                });
+
+                it('should return a promise', function() {
+                    expect(result.then).toBeDefined();
+                });
+
+                it('should call querystring.stringify()', function() {
+                    expect(querystring.stringify).toHaveBeenCalledWith({
+                        firstname: state.event.body.firstName,
+                        lastname: state.event.body.lastName,
+                        email: state.event.body.To,
+                        hs_context: JSON.stringify({ hutk: 'hb123'})
+                    });
+                });
+
+                it('should send an https request', function() {
+                    expect(hubspotSpy).toHaveBeenCalledWith({
+                        host: 'forms.hubspot.com',
+                        port: 443,
+                        method: 'POST',
+                        path: '/uploads/form/v2/' + state.config.hubspot.portal + '/' + state.config.hubspot.form,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Content-Length': body.length
+                        }
+                    }, hubspotCallback);
+
+                    expect(requestObject.on).toHaveBeenCalledWith('error', requestErrorCallback);
+
+                    expect(requestObject.write).toHaveBeenCalledWith(body);
+
+                    expect(requestObject.end).toHaveBeenCalled();
+                });
+
+                describe('when the error handler is called back', function() {
+                    beforeEach(function(done) {
+                        requestErrorCallback('Problem!');
+
+                        setTimeout(done);
+                    });
+
+                    it('should reject the promise', function() {
+                        expect(failure).toHaveBeenCalledWith('Problem!');
+                    });
+                });
+
+                describe('when the request handler is called back', function() {
+                    describe('when response is 204', function() {
+                        beforeEach(function(done) {
+                            hubspotCallback({ statusCode: 204 });
+
+                            setTimeout(done);
+                        });
+
+                        it('should resolve promise with state', function() {
+                            expect(success).toHaveBeenCalledWith(state);
+                        });
+                    });
+
+                    describe('when response is 302', function() {
+                        beforeEach(function(done) {
+                            hubspotCallback({ statusCode: 302 });
+
+                            setTimeout(done);
+                        });
+
+                        it('should resolve promise with state', function() {
+                            expect(success).toHaveBeenCalledWith(state);
+                        });
+                    });
+
+                    describe('when response is not 204 or 302', function() {
+                        beforeEach(function(done) {
+                            hubspotCallback({ statusCode: 400 });
+
+                            setTimeout(done);
+                        });
+
+                        it('should resolve promise with state', function() {
+                            expect(success).not.toHaveBeenCalledWith(state);
+                            expect(failure).toHaveBeenCalledWith('Hubspot request failed, status code: 400');
+                        });
+                    });
+                });
+            });
+
+            describe('when there is not a hubspotutk cookie', function() {
+                var body;
+
+                beforeEach(function(done) {
+                    body = querystring.stringify({
+                        firstname: state.event.body.firstName,
+                        lastname: state.event.body.lastName,
+                        email: state.event.body.To,
+                        hs_context: JSON.stringify({})
+                    });
+                    querystring.stringify.calls.reset();
+
+                    state.event.params.header.Cookie = 'something=else';
+
+                    result = lib.sendHubspot(state).then(success, failure);
+
+                    setTimeout(done);
+                });
+
+                it('should return a promise', function() {
+                    expect(result.then).toBeDefined();
+                });
+
+                it('should call querystring.stringify()', function() {
+                    expect(querystring.stringify).toHaveBeenCalledWith({
+                        firstname: state.event.body.firstName,
+                        lastname: state.event.body.lastName,
+                        email: state.event.body.To,
+                        hs_context: JSON.stringify({})
+                    });
+                });
+            });
         });
     });
 

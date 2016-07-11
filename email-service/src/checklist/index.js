@@ -14,7 +14,6 @@ lib.success = function(state) {
 };
 
 lib.sendHubspot = function(state) {
-    // TODO: send something to Hubspot?
     var config = state.config,
         data = state.event.body,
         headers = state.event.params.header,
@@ -53,7 +52,7 @@ lib.sendHubspot = function(state) {
             }
         });
 
-        req.on('error', function (err) {
+        req.on('error', function(err) {
             return reject(err);
         });
 
