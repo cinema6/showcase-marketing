@@ -1,0 +1,35 @@
+{
+  "name": "showcase-email-service",
+  "version": "1.0.0",
+  "description": "Sending emails for showcase marketing",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "grunt test",
+    "tdd": "grunt watch",
+    "build": "grunt lambda:build --name=checklist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cinema6/showcase-marketing.git"
+  },
+  "author": "Reelcontent, Inc.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cinema6/showcase-marketing/issues"
+  },
+  "homepage": "https://github.com/cinema6/showcase-marketing#readme",
+  "devDependencies": {
+    "adm-zip": "^0.4.7",
+    "fs-extra": "^0.9.1",
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-jasmine-nodejs": "^1.5.3"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1.39",
+    "lodash": "^4.11.1",
+    "postmark": "^1.2.1",
+    "q": "^1.0.1"
+  }
+}
