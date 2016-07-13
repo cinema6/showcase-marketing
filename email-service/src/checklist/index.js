@@ -3,100 +3,103 @@
 var q = require('q');
 var ld = require('lodash');
 var aws = require('aws-sdk');
-var https = require('https');
-var postmark = require('postmark');
-var querystring = require('querystring');
+var hubspot = require('./hubspot');
+var postmark = require('./postmark');
 
 var lib = {};
+
+function returnState(state) {
+    return function() {
+        return state;
+    };
+}
 
 lib.success = function(state) {
     state.context.succeed('SUCCESS!');
 };
 
 lib.sendHubspot = function(state) {
-    var config = state.config,
-        data = state.event.body,
+    var config = state.config.hubspot,
+        user = state.event.body.user,
         headers = state.event.params.header,
         cookieMatch = headers.Cookie && headers.Cookie.match(/hubspotutk=([^\s;]+)/),
-        trackingCookie = cookieMatch ? cookieMatch[1] : null,
-        hsContext = trackingCookie ? { hutk: trackingCookie } : {},
-        body = querystring.stringify({
-            firstname: data.firstName,
-            lastname: data.lastName,
-            email: data.To,
-            'hs_context': JSON.stringify(hsContext)
-        }),
-        options = {
-            host: 'forms.hubspot.com',
-            port: 443,
-            method: 'POST',
-            path: '/uploads/form/v2/' + config.hubspot.portal + '/' + config.hubspot.form,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': body.length
-            }
-        };
+        trackingCookie = cookieMatch ? cookieMatch[1] : null;
 
-    if (!data.hubspotLead) {
+    if (!user.hubspotLead) {
         return q(state);
     }
 
-    return q.Promise(function(resolve, reject) {
-        var req = https.request(options, function(response) {
-            var status = response.statusCode;
-
-            if (status === 204 || status === 302) {
-                return resolve(state);
-            } else {
-                return reject('Hubspot request failed, status code: ' + status);
-            }
-        });
-
-        req.on('error', function(err) {
-            return reject(err);
-        });
-
-        req.write(body);
-        req.end();
-    }).catch(lib.handleError('sendHubspot'));
+    return hubspot.send({
+        portal: config.portal,
+        form: config.form,
+        cookie: trackingCookie,
+        model: user
+    })
+    .then(returnState(state))
+    .catch(lib.handleError('sendHubspot'));
 };
 
 lib.sendPostmark = function(state) {
-    var config = state.config,
-        postmarkClient = new postmark.Client(config.postmark.key);
+    var config = state.config.postmark;
 
-    return q.Promise(function(resolve, reject) {
-        return postmarkClient.sendEmailWithTemplate({
-            TemplateId: config.postmark.template,
-            TemplateModel: state.model,
-            InlineCss: true,
-            From: config.postmark.from,
-            To: state.event.body.To,
-            TrackOpens: true
-            // Tag: template,
-            // Attachments: email.attachments.map(function(attachment, index) {
-            //     return {
-            //         Name: attachment.filename,
-            //         Content: files[index],
-            //         ContentType: 'image/png',
-            //         ContentID: 'cid:' + attachment.cid
-            //     };
-            // })
-        }, function(err) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(state);
-            }
+    return q.all(state.model.map(function(model) {
+        return postmark.send({
+            key: config.key,
+            template: config.template,
+            from: config.from,
+            to: model.to,
+            model: model.data
         });
-    }).catch(lib.handleError('sendPostmarkEmail'));
+    }))
+    .then(returnState(state))
+    .catch(lib.handleError('sendPostmarkEmail'));
 };
 
 lib.prepareModel = function(state) {
-    // we have not determined what data will be POSTed
-    // from the front end. We'll likely need some logic
-    // to map/convert data to something usable for Postmark
-    state.model = state.event.body.TemplateModel;
+    var total = 0,
+        finished = 0,
+        data = state.event.body,
+        recipients = data.recipients || [],
+        users = (data.user.sendCopy ?
+            recipients.concat({
+                email: data.user.email,
+                name: data.user.firstName + ' ' + data.user.lastName
+            }) :
+            recipients),
+        checklist = data.checklist.map(function(section) {
+            var items = section.items.reduce(function(result, item) {
+                    result[(item.done ? 'completed' : 'pending')].push(item);
+                    return result;
+                }, {
+                    completed: [],
+                    pending: []
+                });
+
+            total += section.items.length;
+            finished += items.completed.length;
+
+            return {
+                title: section.title,
+                status: items.completed.length + '/' + section.items.length,
+                completed: items.completed.length ? items.completed : [{title: 'None'}],
+                pending: items.pending.length ? items.pending : [{title: 'None'}]
+            };
+        });
+
+    state.model = users.map(function(user) {
+        return {
+            to: user.email,
+            data: {
+                user: data.user.firstName + ' ' + data.user.lastName,
+                checklist: checklist,
+                finished: finished,
+                app: data.appName,
+                name: user.name,
+                total: total
+            }
+        };
+    });
+
     return q(state);
 };
 
@@ -138,6 +141,19 @@ lib.getConfig = function(state) {
         .catch(lib.handleError('s3GetConfig'));
 };
 
+lib.validate = function(state) {
+    var data = state.event.body;
+
+    if (data && data.user && data.user.firstName && data.user.lastName &&
+        data.user.email && data.checklist && data.appName) {
+        return q(state);
+    }
+
+    return q.reject({
+        message: 'Missing required fields'
+    });
+};
+
 lib.handleError = function(context) {
     return function(err) {
         console.log(context, ': ', err);
@@ -153,14 +169,15 @@ lib.handler = function(event, context) {
         context: context
     };
 
-    lib.getConfig(state)
+    lib.validate(state)
+        .then(lib.getConfig)
         .then(lib.parseConfig)
         .then(lib.prepareModel)
         .then(lib.sendPostmark)
         .then(lib.sendHubspot)
         .then(lib.success)
         .catch(function(err) {
-            context.fail(err.message);
+            context.fail('Error: ' + err.message);
         });
 };
 
