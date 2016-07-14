@@ -26,7 +26,10 @@ describe('Checklist Lambda Function', function() {
         failure = jasmine.createSpy('failure()');
 
         event = {
-            body: {}
+            body: {},
+            stageVariables: {
+                version: 'LATEST'
+            },
         };
         context = {
             functionName: 'checklistLambda',
@@ -44,6 +47,7 @@ describe('Checklist Lambda Function', function() {
             prepareModel: q.defer(),
             sendPostmark: q.defer(),
             sendHubspot: q.defer(),
+            send: q.defer(),
             success: q.defer()
         };
     });
@@ -81,10 +85,10 @@ describe('Checklist Lambda Function', function() {
 
             context.fail = jasmine.createSpy('context.fail()');
 
-            ['validate','getConfig','parseConfig','prepareModel','sendPostmark',
-            'sendHubspot','success'].forEach(function(prop) {
-                spyOn(lib, prop).and.returnValue(deferreds[prop].promise);
-            });
+            ['validate','getConfig','parseConfig','prepareModel','send','success']
+                .forEach(function(prop) {
+                    spyOn(lib, prop).and.returnValue(deferreds[prop].promise);
+                });
 
             lib.handler(event, context);
 
@@ -139,48 +143,24 @@ describe('Checklist Lambda Function', function() {
                             setTimeout(done);
                         });
 
-                        it('should call sendPostmark', function() {
-                            expect(lib.sendPostmark).toHaveBeenCalledWith(state);
+                        it('should call send', function() {
+                            expect(lib.send).toHaveBeenCalledWith(state);
                         });
 
-                        describe('when sendPostmark resolves', function() {
+                        describe('when send resolves', function() {
                             beforeEach(function(done) {
-                                deferreds.sendPostmark.resolve(state);
+                                deferreds.send.resolve(state);
 
                                 setTimeout(done);
                             });
 
-                            it('should call sendHubspot', function() {
-                                expect(lib.sendHubspot).toHaveBeenCalledWith(state);
+                            it('should call success', function() {
+                                expect(lib.success).toHaveBeenCalledWith(state);
                             });
 
-                            describe('when sendHubspot resolves', function() {
+                            describe('when success fails', function() {
                                 beforeEach(function(done) {
-                                    deferreds.sendHubspot.resolve(state);
-
-                                    setTimeout(done);
-                                });
-
-                                it('should call success', function() {
-                                    expect(lib.success).toHaveBeenCalledWith(state);
-                                });
-
-                                describe('when success fails', function() {
-                                    beforeEach(function(done) {
-                                        deferreds.success.reject({ message: 'Bad!' });
-
-                                        setTimeout(done);
-                                    });
-
-                                    it('should pass error message to context.fail()', function() {
-                                        expect(context.fail).toHaveBeenCalledWith('Error: Bad!');
-                                    });
-                                });
-                            });
-
-                            describe('when sendHubspot fails', function() {
-                                beforeEach(function(done) {
-                                    deferreds.sendHubspot.reject({ message: 'Bad!' });
+                                    deferreds.success.reject({ message: 'Bad!' });
 
                                     setTimeout(done);
                                 });
@@ -188,16 +168,12 @@ describe('Checklist Lambda Function', function() {
                                 it('should pass error message to context.fail()', function() {
                                     expect(context.fail).toHaveBeenCalledWith('Error: Bad!');
                                 });
-
-                                it('should not call success', function() {
-                                    expect(lib.success).not.toHaveBeenCalled();
-                                });
                             });
                         });
 
-                        describe('when sendPostmark fails', function() {
+                        describe('when send fails', function() {
                             beforeEach(function(done) {
-                                deferreds.sendPostmark.reject({ message: 'Bad!' });
+                                deferreds.send.reject({ message: 'Bad!' });
 
                                 setTimeout(done);
                             });
@@ -207,7 +183,7 @@ describe('Checklist Lambda Function', function() {
                             });
 
                             it('should not call sendHubspot', function() {
-                                expect(lib.sendHubspot).not.toHaveBeenCalled();
+                                expect(lib.success).not.toHaveBeenCalled();
                             });
                         });
                     });
@@ -224,7 +200,7 @@ describe('Checklist Lambda Function', function() {
                         });
 
                         it('should not call sendPostmark', function() {
-                            expect(lib.sendPostmark).not.toHaveBeenCalled();
+                            expect(lib.send).not.toHaveBeenCalled();
                         });
                     });
                 });
@@ -353,7 +329,7 @@ describe('Checklist Lambda Function', function() {
             expect(getObjectSpy).toHaveBeenCalledWith({
                 Bucket: 'com.cinema6.lambda',
                 Key: state.context.functionName + '/' +
-                    state.context.functionVersion + '.json'
+                    state.event.stageVariables.version + '.json'
             }, jasmine.any(Function));
         });
 
@@ -757,92 +733,23 @@ describe('Checklist Lambda Function', function() {
         });
     });
 
-    describe('sendPostmark(state)', function() {
-        beforeEach(function(done) {
+    describe('send(state)', function() {
+        beforeEach(function() {
             spyOn(postmark, 'send').and.returnValue(deferreds.sendPostmark.promise);
+            spyOn(hubspot, 'send').and.returnValue(deferreds.sendHubspot.promise);
 
             state.config = {
                 postmark: {
                     key: 'super-secret-key',
                     from: 'support@reelcontent.com',
                     template: 123
-                }
-            };
-
-            state.model = [
-                {
-                    to: 'smunson@reelcontent.com',
-                    data: {}
                 },
-                {
-                    to: 'scott@cinema6.com',
-                    data: {}
-                }
-            ];
-
-            result = lib.sendPostmark(state).then(success, failure);
-
-            setTimeout(done);
-        });
-
-        it('should return a promise', function() {
-            expect(result.then).toBeDefined();
-        });
-
-        it('should call postmark.send() method with config for each model item', function() {
-            expect(postmark.send).toHaveBeenCalledWith({
-                key: state.config.postmark.key,
-                template: state.config.postmark.template,
-                from: state.config.postmark.from,
-                to: state.model[0].to,
-                model: state.model[0].data
-            });
-
-            expect(postmark.send).toHaveBeenCalledWith({
-                key: state.config.postmark.key,
-                template: state.config.postmark.template,
-                from: state.config.postmark.from,
-                to: state.model[1].to,
-                model: state.model[1].data
-            });
-        });
-
-        describe('when the email is successfully sent', function() {
-            beforeEach(function(done) {
-                deferreds.sendPostmark.resolve('Success!');
-
-                setTimeout(done);
-            });
-
-            it('should resolve the promise with the state', function() {
-                expect(success).toHaveBeenCalledWith(state);
-            });
-        });
-
-        describe('when the email fails to send', function() {
-            beforeEach(function(done) {
-                deferreds.sendPostmark.reject('Error!');
-
-                setTimeout(done);
-            });
-
-            it('should reject the promise', function() {
-                expect(success).not.toHaveBeenCalledWith(state);
-                expect(failure).toHaveBeenCalledWith('Error!');
-            });
-        });
-    });
-
-    describe('sendHubspot(state)', function() {
-        beforeEach(function() {
-            spyOn(hubspot, 'send').and.returnValue(deferreds.sendHubspot.promise);
-
-            state.config = {
                 hubspot: {
                     portal: 12345,
                     form: 'abc-123'
                 }
             };
+
             state.event = {
                 params: {
                     header: {
@@ -857,13 +764,24 @@ describe('Checklist Lambda Function', function() {
                     }
                 }
             };
+
+            state.model = [
+                {
+                    to: 'smunson@reelcontent.com',
+                    data: {}
+                },
+                {
+                    to: 'scott@cinema6.com',
+                    data: {}
+                }
+            ];
         });
 
         describe('when hubspotLead flag is set to false', function() {
             beforeEach(function(done) {
                 state.event.body.user.hubspotLead = false;
 
-                result = lib.sendHubspot(state).then(success);
+                result = lib.send(state).then(success, failure);
 
                 setTimeout(done);
             });
@@ -872,11 +790,54 @@ describe('Checklist Lambda Function', function() {
                 expect(result.then).toBeDefined();
             });
 
-            it('should immediately resolve the promise with the state', function() {
-                expect(success).toHaveBeenCalledWith(state);
+            it('should not call hubspot.send()', function() {
                 expect(hubspot.send).not.toHaveBeenCalled();
             });
+
+            it('should call postmark.send() method with config for each model item', function() {
+                expect(postmark.send).toHaveBeenCalledWith({
+                    key: state.config.postmark.key,
+                    template: state.config.postmark.template,
+                    from: state.config.postmark.from,
+                    to: state.model[0].to,
+                    model: state.model[0].data
+                });
+
+                expect(postmark.send).toHaveBeenCalledWith({
+                    key: state.config.postmark.key,
+                    template: state.config.postmark.template,
+                    from: state.config.postmark.from,
+                    to: state.model[1].to,
+                    model: state.model[1].data
+                });
+            });
+
+            describe('when the email is successfully sent', function() {
+                beforeEach(function(done) {
+                    deferreds.sendPostmark.resolve('Success!');
+
+                    setTimeout(done);
+                });
+
+                it('should resolve the promise with the state', function() {
+                    expect(success).toHaveBeenCalledWith(state);
+                });
+            });
+
+            describe('when the email fails to send', function() {
+                beforeEach(function(done) {
+                    deferreds.sendPostmark.reject('Error!');
+
+                    setTimeout(done);
+                });
+
+                it('should reject the promise', function() {
+                    expect(success).not.toHaveBeenCalledWith(state);
+                    expect(failure).toHaveBeenCalledWith('Error!');
+                });
+            });
         });
+
 
         describe('when hubspotLead flag is set to true', function() {
             beforeEach(function() {
@@ -887,13 +848,31 @@ describe('Checklist Lambda Function', function() {
                 beforeEach(function(done) {
                     state.event.params.header.Cookie = 'something=else;hubspotutk=hb123;more=coookies;';
 
-                    result = lib.sendHubspot(state).then(success, failure);
+                    result = lib.send(state).then(success, failure);
 
                     setTimeout(done);
                 });
 
                 it('should return a promise', function() {
                     expect(result.then).toBeDefined();
+                });
+
+                it('should call postmark.send() method with config for each model item', function() {
+                    expect(postmark.send).toHaveBeenCalledWith({
+                        key: state.config.postmark.key,
+                        template: state.config.postmark.template,
+                        from: state.config.postmark.from,
+                        to: state.model[0].to,
+                        model: state.model[0].data
+                    });
+
+                    expect(postmark.send).toHaveBeenCalledWith({
+                        key: state.config.postmark.key,
+                        template: state.config.postmark.template,
+                        from: state.config.postmark.from,
+                        to: state.model[1].to,
+                        model: state.model[1].data
+                    });
                 });
 
                 it('should call hubspot.send() with configuration', function() {
@@ -905,27 +884,55 @@ describe('Checklist Lambda Function', function() {
                     });
                 });
 
-                describe('when the send() fails', function() {
+                describe('when one calls succeeds', function() {
                     beforeEach(function(done) {
-                        deferreds.sendHubspot.reject('Problem!');
+                        deferreds.sendHubspot.resolve('Yay!');
+
+                        setTimeout(done);
+                    });
+
+                    it('should not resolve the promise with the state', function() {
+                        expect(success).not.toHaveBeenCalledWith(state);
+                        expect(failure).not.toHaveBeenCalled();
+                    });
+
+                    describe('when the other call succeeds', function() {
+                        beforeEach(function(done) {
+                            deferreds.sendPostmark.resolve('Success!');
+
+                            setTimeout(done);
+                        });
+
+                        it('should not resolve the promise with the state', function() {
+                            expect(success).toHaveBeenCalledWith(state);
+                            expect(failure).not.toHaveBeenCalled();
+                        });
+                    });
+
+                    describe('when the other call fails', function() {
+                        beforeEach(function(done) {
+                            deferreds.sendPostmark.reject('Bad!');
+
+                            setTimeout(done);
+                        });
+
+                        it('should not resolve the promise with the state', function() {
+                            expect(success).not.toHaveBeenCalledWith(state);
+                            expect(failure).toHaveBeenCalledWith('Bad!');
+                        });
+                    });
+                });
+
+                describe('when one call fails', function() {
+                    beforeEach(function(done) {
+                        deferreds.sendPostmark.reject('Error!');
 
                         setTimeout(done);
                     });
 
                     it('should reject the promise', function() {
-                        expect(failure).toHaveBeenCalledWith('Problem!');
-                    });
-                });
-
-                describe('when the send() succeeds', function() {
-                    beforeEach(function(done) {
-                        deferreds.sendHubspot.resolve('Problem!');
-
-                        setTimeout(done);
-                    });
-
-                    it('should resolve promise with state', function() {
-                        expect(success).toHaveBeenCalledWith(state);
+                        expect(success).not.toHaveBeenCalled();
+                        expect(failure).toHaveBeenCalled();
                     });
                 });
             });
@@ -934,7 +941,7 @@ describe('Checklist Lambda Function', function() {
                 beforeEach(function(done) {
                     state.event.params.header.Cookie = 'something=else';
 
-                    result = lib.sendHubspot(state).then(success, failure);
+                    result = lib.send(state).then(success, failure);
 
                     setTimeout(done);
                 });

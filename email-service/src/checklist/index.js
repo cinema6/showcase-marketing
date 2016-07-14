@@ -18,41 +18,34 @@ lib.success = function(state) {
     state.context.succeed('SUCCESS!');
 };
 
-lib.sendHubspot = function(state) {
-    var config = state.config.hubspot,
+lib.send = function(state) {
+    var config = state.config,
         user = state.event.body.user,
         headers = state.event.params.header,
         cookieMatch = headers.Cookie && headers.Cookie.match(/hubspotutk=([^\s;]+)/),
         trackingCookie = cookieMatch ? cookieMatch[1] : null;
 
-    if (!user.hubspotLead) {
-        return q(state);
-    }
+    var sendHubspot = user.hubspotLead ?
+        hubspot.send({
+            portal: config.hubspot.portal,
+            form: config.hubspot.form,
+            cookie: trackingCookie,
+            model: user
+        }).catch(lib.handleError('sendHubspot')) :
+        q(null);
 
-    return hubspot.send({
-        portal: config.portal,
-        form: config.form,
-        cookie: trackingCookie,
-        model: user
-    })
-    .then(returnState(state))
-    .catch(lib.handleError('sendHubspot'));
-};
-
-lib.sendPostmark = function(state) {
-    var config = state.config.postmark;
-
-    return q.all(state.model.map(function(model) {
+    var sendPostmark = q.all(state.model.map(function(model) {
         return postmark.send({
-            key: config.key,
-            template: config.template,
-            from: config.from,
+            key: config.postmark.key,
+            template: config.postmark.template,
+            from: config.postmark.from,
             to: model.to,
             model: model.data
         });
-    }))
-    .then(returnState(state))
-    .catch(lib.handleError('sendPostmarkEmail'));
+    })).catch(lib.handleError('sendPostmarkEmail'));
+
+    return q.all([sendHubspot, sendPostmark])
+        .then(returnState(state));
 };
 
 lib.prepareModel = function(state) {
@@ -129,7 +122,7 @@ lib.getConfig = function(state) {
         s3GetObject = q.nbind(s3.getObject, s3),
         params = {
             Bucket : 'com.cinema6.lambda',
-            Key : state.context.functionName + '/' + state.context.functionVersion + '.json',
+            Key : state.context.functionName + '/' + state.event.stageVariables.version + '.json',
         };
 
     return s3GetObject(params)
@@ -173,8 +166,7 @@ lib.handler = function(event, context) {
         .then(lib.getConfig)
         .then(lib.parseConfig)
         .then(lib.prepareModel)
-        .then(lib.sendPostmark)
-        .then(lib.sendHubspot)
+        .then(lib.send)
         .then(lib.success)
         .catch(function(err) {
             context.fail('Error: ' + err.message);
