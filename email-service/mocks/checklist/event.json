@@ -1,24 +1,117 @@
 {
-    "firstName": "Scott",
-    "lastName": "Munson",
-    "hubspotLead": true,
-    "From": "sender@example.com",
-    "To": "smunson@reelcontent.com",
-    "TemplateId": 741783,
-    "TemplateModel": {
-        "product_name": "Reelcontent, Inc.",
-        "total": "$50",
-        "name": "Scott Munson",
-        "statement_name": "Invoice #101",
-        "invoice_id": "Invoice #101",
-        "date": "5/25/16",
-        "invoice_details": [
+    "body": {
+        "appName": "Super App",
+        "user": {
+            "firstName": "Scott",
+            "lastName": "Munson",
+            "email": "smunson@reelcontent.com",
+            "hubspotLead": false,
+            "sendCopy": true
+        },
+        "recipients": [
             {
-                "description": "Some awesome thing",
-                "amount": "$50"
+                "email": "scott@cinema6.com",
+                "name": "Scott Cinema6"
             }
         ],
-        "product_address_line1": "555 Some Street",
-        "product_address_line2": "Suite 999"
+        "checklist": [
+            {
+                "title": "Design/Development",
+                "items": [
+                    {
+                        "title": "Splash Screen",
+                        "done": true
+                    },
+                    {
+                        "title": "Onboarding/help screens",
+                        "done": false
+                    },
+                    {
+                        "title": "Empty states messaging and 'Call to Actions'",
+                        "done": false
+                    },
+                    {
+                        "title": "Spell check, grammar check",
+                        "done": true
+                    },
+                    {
+                        "title": "Responsive design (landscape and multiple device sizes)",
+                        "done": false
+                    },
+                    {
+                        "title": "Follows iOS Design guidelines",
+                        "done": false
+                    }
+                ]
+            },
+            {
+                "title": "Appstore Submission",
+                "items": [
+                    {
+                        "title": "Enroll in iTunes Connect",
+                        "done": true
+                    },
+                    {
+                        "title": "Launch Icon(s)",
+                        "done": false
+                    },
+                    {
+                        "title": "App Screenshots for all supported devices (Use realistic data in screenshots, create)",
+                        "done": false
+                    },
+                    {
+                        "title": "App information (meta, keywords, description, URL)",
+                        "done": false
+                    }
+                ]
+            },
+            {
+                "title": "Testing",
+                "items": [
+                    {
+                        "title": "Performance testing (throttling network speed)",
+                        "done": false
+                    },
+                    {
+                        "title": "Functionality testing",
+                        "done": true
+                    },
+                    {
+                        "title": "Stress testing",
+                        "done": true
+                    },
+                    {
+                        "title": "User testing (User interface and interaction)",
+                        "done": false
+                    }
+                ]
+            },
+            {
+                "title": "Website & Social Presence",
+                "items": [
+                    {
+                        "title": "Website for your app (including app store link prompting to download the app)",
+                        "done": true
+                    },
+                    {
+                        "title": "Facebook Page",
+                        "done": true
+                    },
+                    {
+                        "title": "Twitter Account",
+                        "done": true
+                    },
+                    {
+                        "title": "YouTube Channel",
+                        "done": true
+                    }
+                ]
+            }
+        ]
+    },
+    "params": {
+        "header": {
+            "Cookies": ""
+        }
     }
 }
